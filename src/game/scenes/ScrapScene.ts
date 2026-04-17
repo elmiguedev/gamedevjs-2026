@@ -61,6 +61,8 @@ export class ScrapScene extends Scene {
       this.refreshEvent?.remove(false);
       this.unsubscribeState?.();
       this.clearWorkshop();
+      this.craftingText?.destroy();
+      this.craftingText = undefined;
       this.collectButton?.destroy();
     });
   }
@@ -176,7 +178,8 @@ export class ScrapScene extends Scene {
   }
 
   private ensureCraftingText(y: number, value: string): void {
-    if (!this.craftingText) {
+    if (!this.craftingText || !this.craftingText.active) {
+      this.craftingText?.destroy();
       this.craftingText = this.add.text(40, y, value, {
         color: '#111111',
         fontFamily: 'Arial, sans-serif',

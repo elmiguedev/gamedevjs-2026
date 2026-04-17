@@ -7,5 +7,6 @@ export interface CarPartInventoryRepository {
   remove(id: string): CarPartInventoryItem | undefined;
   findById(id: string): CarPartInventoryItem | undefined;
   replace(item: CarPartInventoryItem): void;
+  setEquipped(id: string, equipped: boolean): void;
   subscribe(listener: (items: CarPartInventoryItem[]) => void): () => void;
 }

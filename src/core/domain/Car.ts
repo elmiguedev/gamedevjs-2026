@@ -1,4 +1,5 @@
 import type { CarPart, CarPartType } from './CarPart';
+import type { CarPartInventoryItem } from './CarPartInventory';
 import { CarSlot } from './CarSlot';
 
 export interface CarAttributes {
@@ -34,7 +35,7 @@ export class Car {
 
   static createInitial(chassisPart: CarPart): Car {
     return new Car({
-      chassis: new CarSlot('chasis', chassisPart),
+      chassis: new CarSlot('chasis', chassisPart, null),
       wheels: {
         frontLeft: new CarSlot('rueda'),
         frontRight: new CarSlot('rueda'),
@@ -65,21 +66,28 @@ export class Car {
     return total;
   }
 
-  equipPart(part: CarPart): CarPart | null {
-    const slot = this.findSlotForPart(part.type);
+  equipItem(item: CarPartInventoryItem): string | null {
+    const slot = this.findSlotForPart(item.part.type);
 
     if (!slot) {
-      throw new Error(`No slot available for ${part.type}`);
+      throw new Error(`No slot available for ${item.part.type}`);
     }
 
-    const previous = slot.part;
-    slot.fill(part);
+    if (slot.equippedItemId === item.id) {
+      return item.id;
+    }
 
-    return previous;
+    const previousEquippedItemId = slot.equippedItemId;
+    slot.fill(item.part, item.id);
+    return previousEquippedItemId;
   }
 
-  getSelectedPartForSlotType(type: CarPartType): CarPart | null {
-    return this.findSlotForPart(type)?.part ?? null;
+  isItemEquipped(itemId: string): boolean {
+    return this.listSlots().some((slot) => slot.equippedItemId === itemId);
+  }
+
+  isPartEquipped(part: CarPart): boolean {
+    return this.listSlots().some((slot) => slot.part === part);
   }
 
   private findSlotForPart(type: CarPartType): CarSlot | null {

@@ -1,10 +1,11 @@
-import { GameObjects, Scene } from 'phaser';
+import { Scene } from 'phaser';
+import { ButtonEntity } from '@/game/entities/ButtonEntity';
 
 export class MenuEntity {
-  private carButton?: GameObjects.Rectangle;
-  private scrapButton?: GameObjects.Rectangle;
-  private storeButton?: GameObjects.Rectangle;
-  private raceButton?: GameObjects.Rectangle;
+  private carButton?: ButtonEntity;
+  private scrapButton?: ButtonEntity;
+  private inventoryButton?: ButtonEntity;
+  private raceButton?: ButtonEntity;
 
   constructor(private readonly scene: Scene) {
     this.create();
@@ -28,27 +29,13 @@ export class MenuEntity {
 
     this.carButton = this.createButton(startX, menuY, buttonWidth, buttonHeight, 'Car', 'CarScene');
     this.scrapButton = this.createButton(startX + buttonWidth + gap, menuY, buttonWidth, buttonHeight, 'Scrap', 'ScrapScene');
-    this.storeButton = this.createButton(startX + (buttonWidth + gap) * 2, menuY, buttonWidth, buttonHeight, 'Store', 'StoreScene');
+    this.inventoryButton = this.createButton(startX + (buttonWidth + gap) * 2, menuY, buttonWidth, buttonHeight, 'Inventory', 'InventoryScene');
     this.raceButton = this.createButton(startX + (buttonWidth + gap) * 3, menuY, buttonWidth, buttonHeight, 'Race', 'RaceScene');
   }
 
-  private createButton(x: number, y: number, width: number, height: number, label: string, targetScene: string): GameObjects.Rectangle {
-    const button = this.scene.add.rectangle(x, y, width, height, 0x0b1d39);
-    button.setStrokeStyle(2, 0xffffff);
-    button.setInteractive({ useHandCursor: true });
-    button.setScrollFactor(0);
-    button.setDepth(1001);
-
-    this.scene.add.text(x, y, label, {
-      color: '#ffffff',
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '18px',
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(1002);
-
-    button.on('pointerdown', () => {
+  private createButton(x: number, y: number, width: number, height: number, label: string, targetScene: string): ButtonEntity {
+    return new ButtonEntity(this.scene, x, y, width, height, label, () => {
       this.scene.scene.start(targetScene);
     });
-
-    return button;
   }
 }

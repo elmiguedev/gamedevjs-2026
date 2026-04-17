@@ -31,6 +31,8 @@ export class ButtonEntity extends GameObjects.Container {
 
     this.add([this.background, this.labelText]);
     this.setSize(this.buttonWidth, this.buttonHeight);
+    this.setScrollFactor(0);
+    this.setDepth(1001);
     this.background.setInteractive({ useHandCursor: true });
     this.background.on('pointerdown', () => {
       if (this.disabled) {
@@ -62,5 +64,10 @@ export class ButtonEntity extends GameObjects.Container {
     this.background.setAlpha(1);
     this.labelText.setColor('#ffffff');
     this.background.setInteractive({ useHandCursor: true });
+  }
+
+  protected preDestroy(): void {
+    this.background.destroy();
+    this.labelText.destroy();
   }
 }

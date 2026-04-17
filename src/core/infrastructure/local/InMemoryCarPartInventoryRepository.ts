@@ -15,6 +15,7 @@ export class InMemoryCarPartInventoryRepository implements CarPartInventoryRepos
     const item: CarPartInventoryItem = {
       id: `part-${this.nextId++}`,
       part,
+      equipped: false,
     };
 
     this.items.push(item);
@@ -48,6 +49,17 @@ export class InMemoryCarPartInventoryRepository implements CarPartInventoryRepos
     }
 
     this.items[index] = item;
+    this.notify();
+  }
+
+  setEquipped(id: string, equipped: boolean): void {
+    const item = this.findById(id);
+
+    if (!item) {
+      return;
+    }
+
+    item.equipped = equipped;
     this.notify();
   }
 

@@ -10,7 +10,7 @@ export class EquipCarPartAction implements Action<{ itemId: string }, GameState>
   ) {}
 
   async execute(input: { itemId: string }): Promise<GameState> {
-    const item = this.carPartInventoryRepository.remove(input.itemId);
+    const item = this.carPartInventoryRepository.findById(input.itemId);
 
     if (!item) {
       throw new Error('Inventory item not found');
@@ -18,16 +18,21 @@ export class EquipCarPartAction implements Action<{ itemId: string }, GameState>
 
     try {
       const state = this.gameStateService.getState();
-      const previousPart = state.car.equipPart(item.part);
 
-      if (previousPart) {
-        this.carPartInventoryRepository.add(previousPart);
+      if (item.equipped) {
+        return state;
+      }
+
+      const previousEquippedItemId = state.car.equipItem(item);
+      this.carPartInventoryRepository.setEquipped(item.id, true);
+
+      if (previousEquippedItemId && previousEquippedItemId !== item.id) {
+        this.carPartInventoryRepository.setEquipped(previousEquippedItemId, false);
       }
 
       this.gameStateService.update((current) => current);
       return state;
     } catch (error) {
-      this.carPartInventoryRepository.replace(item);
       throw error;
     }
   }

@@ -2,7 +2,7 @@ import { AUTO, Game, Scale } from 'phaser';
 import { CarScene } from '@/game/scenes/CarScene';
 import { RaceScene } from '@/game/scenes/RaceScene';
 import { ScrapScene } from '@/game/scenes/ScrapScene';
-import { StoreScene } from '@/game/scenes/StoreScene';
+import { InventoryScene } from '@/game/scenes/InventoryScene';
 
 export const createGame = (parent: string): Game => {
   return new Game({
@@ -18,6 +18,6 @@ export const createGame = (parent: string): Game => {
       mode: Scale.FIT,
       autoCenter: Scale.CENTER_BOTH,
     },
-    scene: [ScrapScene, CarScene, StoreScene, RaceScene],
+    scene: [ScrapScene, CarScene, InventoryScene, RaceScene],
   });
 };
