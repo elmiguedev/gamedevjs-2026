@@ -7,6 +7,7 @@ export class ScrapButtonEntity {
     private readonly scene: Scene,
     private readonly x: number,
     private readonly y: number,
+    private readonly onPressed: () => void,
   ) {
     this.create();
   }
@@ -15,5 +16,7 @@ export class ScrapButtonEntity {
     this.button = this.scene.add.rectangle(this.x, this.y, 100, 100, 0x808080);
     this.button.setScrollFactor(0);
     this.button.setDepth(900);
+    this.button.setInteractive({ useHandCursor: true });
+    this.button.on('pointerdown', this.onPressed);
   }
 }

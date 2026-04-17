@@ -1,10 +1,14 @@
 import type { GameObjects, Scene } from 'phaser';
 import type { GameState } from '@/core/domain/GameState';
+import { ActionProvider } from '@/game/providers/ActionProvider';
 
 export class ResourceHud {
   private text?: GameObjects.Text;
 
-  constructor(private readonly scene: Scene) {}
+  constructor(private readonly scene: Scene) {
+    this.create();
+    void this.refreshState();
+  }
 
   create(): void {
     this.text = this.scene.add.text(16, 16, '', {
@@ -17,10 +21,13 @@ export class ResourceHud {
 
   update(state: GameState): void {
     this.text?.setText([
-      `Money: ${state.money}`,
+      `Cash: ${state.cash}`,
       `Scrap: ${state.scrap}`,
-      `Fuel: ${state.fuel}`,
-      `Prestige: ${state.prestige}`,
     ]);
+  }
+
+  async refreshState(): Promise<void> {
+    const state = await ActionProvider.getState();
+    this.update(state);
   }
 }
