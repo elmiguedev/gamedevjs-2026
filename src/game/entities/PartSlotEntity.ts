@@ -1,4 +1,4 @@
-import { GameObjects, Scene } from 'phaser';
+import { GameObjects, Geom, Scene } from 'phaser';
 import type { CarPartType } from '@/core/domain/CarPart';
 import type { CarSlot } from '@/core/domain/CarSlot';
 
@@ -19,10 +19,14 @@ export class PartSlotEntity extends GameObjects.Container {
     private readonly width: number,
     private readonly height: number,
     private readonly slot: CarSlot,
+    private readonly onSelect?: (slot: CarSlot) => void,
   ) {
     super(scene, x, y);
 
     this.render();
+    this.setSize(this.width, this.height);
+    this.setInteractive(new Geom.Rectangle(-this.width / 2, -this.height / 2, this.width, this.height), Geom.Rectangle.Contains);
+    this.on('pointerdown', () => this.onSelect?.(this.slot));
   }
 
   private render(): void {
