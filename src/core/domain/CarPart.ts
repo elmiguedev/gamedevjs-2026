@@ -10,6 +10,9 @@ export class CarPart {
     public readonly stats: Partial<CarAttributes>,
     public readonly scrapCost: number,
     public readonly cashCost: number,
+    public readonly requiredLevel: number,
+    public readonly xpReward: number,
+    public readonly craftTimeSeconds: number,
     public readonly unlock: string,
   ) {}
 }

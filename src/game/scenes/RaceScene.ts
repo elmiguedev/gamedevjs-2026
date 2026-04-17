@@ -1,5 +1,6 @@
 import { Scene } from 'phaser';
 import { MenuEntity } from '@/game/entities/MenuEntity';
+import { ResourceHud } from '@/game/huds/ResourceHud';
 
 export class RaceScene extends Scene {
   constructor() {
@@ -8,6 +9,8 @@ export class RaceScene extends Scene {
 
   create(): void {
     this.cameras.main.setBackgroundColor('#ffffff');
+
+    new ResourceHud(this);
 
     this.add.text(360, 180, 'Race Scene', {
       color: '#111111',

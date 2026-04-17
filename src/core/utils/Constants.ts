@@ -1,0 +1,1 @@
+export const DEFAULT_COLLECT_SCRAP_AMOUNT = 10;

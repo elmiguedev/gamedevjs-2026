@@ -1,4 +1,4 @@
-import type { CarPart } from './CarPart';
+import type { CarPart, CarPartType } from './CarPart';
 import { CarSlot } from './CarSlot';
 
 export interface CarAttributes {
@@ -63,6 +63,45 @@ export class Car {
     }
 
     return total;
+  }
+
+  equipPart(part: CarPart): CarPart | null {
+    const slot = this.findSlotForPart(part.type);
+
+    if (!slot) {
+      throw new Error(`No slot available for ${part.type}`);
+    }
+
+    const previous = slot.part;
+    slot.fill(part);
+
+    return previous;
+  }
+
+  getSelectedPartForSlotType(type: CarPartType): CarPart | null {
+    return this.findSlotForPart(type)?.part ?? null;
+  }
+
+  private findSlotForPart(type: CarPartType): CarSlot | null {
+    if (type === 'rueda') {
+      return (
+        this.slots.wheels.frontLeft.part === null ? this.slots.wheels.frontLeft :
+        this.slots.wheels.frontRight.part === null ? this.slots.wheels.frontRight :
+        this.slots.wheels.rearLeft.part === null ? this.slots.wheels.rearLeft :
+        this.slots.wheels.rearRight.part === null ? this.slots.wheels.rearRight :
+        this.slots.wheels.frontLeft
+      );
+    }
+
+    const lookup: Record<Exclude<CarPartType, 'rueda'>, CarSlot> = {
+      chasis: this.slots.chassis,
+      nitro: this.slots.nitro,
+      motor: this.slots.engine,
+      direccion: this.slots.steering,
+      aleron: this.slots.spoiler,
+    };
+
+    return lookup[type as Exclude<CarPartType, 'rueda'>] ?? null;
   }
 
   private listSlots(): CarSlot[] {

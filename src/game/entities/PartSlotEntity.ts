@@ -4,7 +4,7 @@ import type { CarSlot } from '@/core/domain/CarSlot';
 
 const SLOT_COLORS: Record<CarPartType, number> = {
   chasis: 0x93c5fd,
-  wheel: 0xc7d2fe,
+  wheel: 0x111111,
   nitro: 0xfed7aa,
   motor: 0xe9d5ff,
   direction: 0xcffafe,

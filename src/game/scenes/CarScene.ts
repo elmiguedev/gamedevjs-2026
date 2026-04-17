@@ -1,6 +1,7 @@
 import { Scene } from 'phaser';
 import { CarEntity } from '@/game/entities/CarEntity';
 import { MenuEntity } from '@/game/entities/MenuEntity';
+import { ResourceHud } from '@/game/huds/ResourceHud';
 import { ActionProvider } from '@/game/providers/ActionProvider';
 
 export class CarScene extends Scene {
@@ -11,6 +12,7 @@ export class CarScene extends Scene {
   create(): void {
     this.cameras.main.setBackgroundColor('#ffffff');
 
+    new ResourceHud(this);
     void this.loadCar();
 
     new MenuEntity(this);
