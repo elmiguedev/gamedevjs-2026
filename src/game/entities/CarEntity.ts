@@ -1,10 +1,10 @@
 import { GameObjects, Scene } from 'phaser';
-import type { CarState } from '@/core/domain/Car';
+import type { Car } from '@/core/domain/Car';
 import { CarStatusEntity } from '@/game/entities/CarStatusEntity';
 import { PartSlotEntity } from '@/game/entities/PartSlotEntity';
 
 export class CarEntity extends GameObjects.Container {
-  constructor(scene: Scene, x: number, y: number, private readonly car: CarState) {
+  constructor(scene: Scene, x: number, y: number, private readonly car: Car) {
     super(scene, x, y);
 
     scene.add.existing(this);

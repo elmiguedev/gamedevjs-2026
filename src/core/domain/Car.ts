@@ -1,4 +1,5 @@
-export type CarPartType = 'chassis' | 'wheel' | 'nitro' | 'motor' | 'direction' | 'spoiler';
+import type { CarPart } from './CarPart';
+import { CarSlot } from './CarSlot';
 
 export interface CarAttributes {
   acceleration: number;
@@ -7,75 +8,74 @@ export interface CarAttributes {
   direction: number;
 }
 
-export interface CarPartState {
-  type: CarPartType;
-  name: string;
-  bonus: string;
-}
-
-export interface PartSlotState {
-  type: CarPartType;
-  part?: CarPartState;
-}
-
-export interface CarState {
-  attributes: CarAttributes;
-  slots: {
-    chassis: PartSlotState;
-    wheels: {
-      frontLeft: PartSlotState;
-      frontRight: PartSlotState;
-      rearLeft: PartSlotState;
-      rearRight: PartSlotState;
-    };
-    engine: PartSlotState;
-    steering: PartSlotState;
-    nitro: PartSlotState;
-    spoiler: PartSlotState;
+export interface CarSlots {
+  chassis: CarSlot;
+  wheels: {
+    frontLeft: CarSlot;
+    frontRight: CarSlot;
+    rearLeft: CarSlot;
+    rearRight: CarSlot;
   };
+  engine: CarSlot;
+  steering: CarSlot;
+  nitro: CarSlot;
+  spoiler: CarSlot;
 }
 
-export const createInitialCarState = (): CarState => ({
-  attributes: {
-    acceleration: 3,
-    speed: 2,
-    resistance: 8,
-    direction: 3,
-  },
-  slots: {
-    chassis: {
-      type: 'chassis',
-      part: {
-        type: 'chassis',
-        name: 'Chasis Base',
-        bonus: 'R +8',
-      },
-    },
-    wheels: {
-      frontLeft: {
-        type: 'wheel',
-      },
-      frontRight: {
-        type: 'wheel',
-      },
-      rearLeft: {
-        type: 'wheel',
-      },
-      rearRight: {
-        type: 'wheel',
-      },
-    },
-    engine: {
-      type: 'motor',
-    },
-    steering: {
-      type: 'direction',
-    },
-    nitro: {
-      type: 'nitro',
-    },
-    spoiler: {
-      type: 'spoiler',
-    },
-  },
+export const zeroCarAttributes = (): CarAttributes => ({
+  acceleration: 0,
+  speed: 0,
+  resistance: 0,
+  direction: 0,
 });
+
+export class Car {
+  constructor(public readonly slots: CarSlots) {}
+
+  static createInitial(chassisPart: CarPart): Car {
+    return new Car({
+      chassis: new CarSlot('chasis', chassisPart),
+      wheels: {
+        frontLeft: new CarSlot('rueda'),
+        frontRight: new CarSlot('rueda'),
+        rearLeft: new CarSlot('rueda'),
+        rearRight: new CarSlot('rueda'),
+      },
+      engine: new CarSlot('motor'),
+      steering: new CarSlot('direccion'),
+      nitro: new CarSlot('nitro'),
+      spoiler: new CarSlot('aleron'),
+    });
+  }
+
+  get attributes(): CarAttributes {
+    const total = zeroCarAttributes();
+
+    for (const slot of this.listSlots()) {
+      if (!slot.part) {
+        continue;
+      }
+
+      total.acceleration += slot.part.stats.acceleration ?? 0;
+      total.speed += slot.part.stats.speed ?? 0;
+      total.resistance += slot.part.stats.resistance ?? 0;
+      total.direction += slot.part.stats.direction ?? 0;
+    }
+
+    return total;
+  }
+
+  private listSlots(): CarSlot[] {
+    return [
+      this.slots.chassis,
+      this.slots.wheels.frontLeft,
+      this.slots.wheels.frontRight,
+      this.slots.wheels.rearLeft,
+      this.slots.wheels.rearRight,
+      this.slots.engine,
+      this.slots.steering,
+      this.slots.nitro,
+      this.slots.spoiler,
+    ];
+  }
+}

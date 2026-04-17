@@ -1,7 +1,7 @@
-import type { CarState } from './Car';
+import type { Car } from './Car';
 
 export interface GameState {
   scrap: number;
   cash: number;
-  car: CarState;
+  car: Car;
 }

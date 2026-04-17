@@ -1,12 +1,13 @@
 import { GameObjects, Scene } from 'phaser';
-import type { CarPartType, PartSlotState } from '@/core/domain/Car';
+import type { CarPartType } from '@/core/domain/CarPart';
+import type { CarSlot } from '@/core/domain/CarSlot';
 
 const SLOT_COLORS: Record<CarPartType, number> = {
-  chassis: 0xf4f1ea,
-  wheel: 0x111111,
+  chasis: 0x93c5fd,
+  wheel: 0xc7d2fe,
   nitro: 0xfed7aa,
   motor: 0xe9d5ff,
-  direction: 0xc7d2fe,
+  direction: 0xcffafe,
   spoiler: 0xd9f99d,
 };
 
@@ -17,7 +18,7 @@ export class PartSlotEntity extends GameObjects.Container {
     y: number,
     private readonly width: number,
     private readonly height: number,
-    private readonly slot: PartSlotState,
+    private readonly slot: CarSlot,
   ) {
     super(scene, x, y);
 
@@ -34,11 +35,10 @@ export class PartSlotEntity extends GameObjects.Container {
   }
 
   private renderFilled(): void {
-    const partType = this.slot.part?.type ?? this.slot.type;
-    const fill = SLOT_COLORS[partType];
+    const fill = SLOT_COLORS[this.slot.type];
 
     const block = this.scene.add.rectangle(0, 0, this.width, this.height, fill);
-    block.setStrokeStyle(2, 0x111111);
+    block.setStrokeStyle(3, 0x111111);
     this.add(block);
   }
 
