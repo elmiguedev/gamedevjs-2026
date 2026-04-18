@@ -86,6 +86,10 @@ export class Car {
     return this.listSlots().some((slot) => slot.equippedItemId === itemId);
   }
 
+  getEquippedItemIdForType(type: CarPartType): string | null {
+    return this.findSlotForPart(type)?.equippedItemId ?? null;
+  }
+
   isPartEquipped(part: CarPart): boolean {
     return this.listSlots().some((slot) => slot.part === part);
   }

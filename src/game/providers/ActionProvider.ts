@@ -42,6 +42,29 @@ export class ActionProvider {
     }
 
     this.gameStateService = new LocalGameService({ scrap: 0, cash: 0, car: Car.createInitial(chassisPart) });
+
+    const initialChassisItem = this.carPartInventoryRepository.add(chassisPart);
+    this.carPartInventoryRepository.setEquipped(initialChassisItem.id, true);
+    this.gameStateService.getState().car.slots.chassis.equippedItemId = initialChassisItem.id;
+
+    const wheelPart = this.carPartRepository.findById('rueda-base');
+    const chassisPartForInventory = this.carPartRepository.findById('chasis-base');
+
+    if (!wheelPart) {
+      throw new Error('Missing base wheel part');
+    }
+
+    if (!chassisPartForInventory) {
+      throw new Error('Missing base chassis part for inventory');
+    }
+
+    for (let index = 0; index < 10; index += 1) {
+      this.carPartInventoryRepository.add(wheelPart);
+      if (index < 9) {
+        this.carPartInventoryRepository.add(chassisPartForInventory);
+      }
+    }
+
     this.collectScrapAction = new CollectScrapAction(this.gameStateService);
     this.craftCarPartAction = new CraftCarPartAction(
       this.gameStateService,

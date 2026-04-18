@@ -3,12 +3,17 @@ import { MenuEntity } from '@/game/entities/MenuEntity';
 import { ResourceHud } from '@/game/huds/ResourceHud';
 import { ActionProvider } from '@/game/providers/ActionProvider';
 import { InventoryListEntity } from '@/game/entities/InventoryListEntity';
+import { ConfirmationEntity } from '@/game/entities/ConfirmationEntity';
+import type { GameState } from '@/core/domain/GameState';
+import type { CarPartInventoryItem } from '@/core/domain/CarPartInventory';
 
 export class InventoryScene extends Scene {
   private resourceHud!: ResourceHud;
   private inventoryList?: InventoryListEntity;
   private unsubscribeInventory?: () => void;
   private unsubscribeState?: () => void;
+  private confirmation?: ConfirmationEntity;
+  private latestState?: GameState;
 
   constructor() {
     super('InventoryScene');
@@ -32,20 +37,16 @@ export class InventoryScene extends Scene {
       fontSize: '16px',
     }).setOrigin(0.5);
 
-    this.inventoryList = new InventoryListEntity(this, 40, 180, (itemId) => {
-      void ActionProvider.equipCarPart(itemId);
+    this.inventoryList = new InventoryListEntity(this, 40, 180, 640, 520, (itemId) => {
+      void this.requestEquip(itemId);
     });
 
     this.unsubscribeInventory = ActionProvider.getCarPartInventoryRepository().subscribe((items) => {
-      const state = ActionProvider.getState();
-      void state.then((gameState) => {
-        this.inventoryList?.setData(items, gameState.car);
-      });
+      this.inventoryList?.setData(items);
     });
 
     this.unsubscribeState = ActionProvider.subscribeState((state) => {
-      const items = ActionProvider.getCarPartInventoryRepository().findAll();
-      this.inventoryList?.setData(items, state.car);
+      this.latestState = state;
     });
 
     new MenuEntity(this);
@@ -53,7 +54,46 @@ export class InventoryScene extends Scene {
     this.events.once('shutdown', () => {
       this.unsubscribeInventory?.();
       this.unsubscribeState?.();
+      this.confirmation?.destroy();
       this.inventoryList?.destroy();
     });
+  }
+
+  private async requestEquip(itemId: string): Promise<void> {
+    const item = ActionProvider.getCarPartInventoryRepository().findById(itemId);
+
+    if (!item) {
+      return;
+    }
+
+    const state = this.latestState ?? await ActionProvider.getState();
+    const occupiedItemId = state.car.getEquippedItemIdForType(item.part.type);
+
+    if (occupiedItemId && occupiedItemId !== itemId) {
+      this.openConfirm(item, occupiedItemId);
+      return;
+    }
+
+    void ActionProvider.equipCarPart(itemId);
+  }
+
+  private openConfirm(item: CarPartInventoryItem, occupiedItemId: string): void {
+    this.confirmation?.destroy();
+
+    const currentItem = ActionProvider.getCarPartInventoryRepository().findById(occupiedItemId);
+    const currentName = currentItem?.part.name ?? 'current part';
+
+    this.confirmation = new ConfirmationEntity(
+      this,
+      'Replace equipped part?',
+      `Equip ${item.part.name} and replace ${currentName}?`,
+      () => {
+        void ActionProvider.equipCarPart(item.id);
+        this.confirmation = undefined;
+      },
+      () => {
+        this.confirmation = undefined;
+      },
+    );
   }
 }

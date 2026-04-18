@@ -1,6 +1,5 @@
 import { GameObjects, Scene } from 'phaser';
 import { ButtonEntity } from '@/game/entities/ButtonEntity';
-import type { Car } from '@/core/domain/Car';
 import type { CarPartInventoryItem } from '@/core/domain/CarPartInventory';
 
 export class InventoryRowEntity extends GameObjects.Container {
@@ -12,7 +11,6 @@ export class InventoryRowEntity extends GameObjects.Container {
     x: number,
     y: number,
     private readonly item: CarPartInventoryItem,
-    car: Car,
     private readonly onEquip: (itemId: string) => void,
   ) {
     super(scene, x, y);

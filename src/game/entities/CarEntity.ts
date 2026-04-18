@@ -1,6 +1,7 @@
 import { GameObjects, Scene } from 'phaser';
 import type { Car } from '@/core/domain/Car';
 import type { CarSlot } from '@/core/domain/CarSlot';
+import { CarEquipmentEntity } from '@/game/entities/CarEquipmentEntity';
 import { CarPartDetailsEntity } from '@/game/entities/CarPartDetailsEntity';
 import { CarStatusEntity } from '@/game/entities/CarStatusEntity';
 import { PartSlotEntity } from '@/game/entities/PartSlotEntity';
@@ -8,6 +9,7 @@ import { PartSlotEntity } from '@/game/entities/PartSlotEntity';
 export class CarEntity extends GameObjects.Container {
   private selectedSlot: CarSlot;
   private readonly detailsEntity: CarPartDetailsEntity;
+  private readonly equipmentEntity: CarEquipmentEntity;
 
   constructor(scene: Scene, x: number, y: number, private readonly car: Car) {
     super(scene, x, y);
@@ -16,6 +18,7 @@ export class CarEntity extends GameObjects.Container {
     this.setDepth(5);
     this.selectedSlot = this.car.slots.chassis;
     this.detailsEntity = new CarPartDetailsEntity(this.scene, 170, -6, this.selectedSlot);
+    this.equipmentEntity = new CarEquipmentEntity(this.scene, 170, 110, this.car);
 
     this.render();
   }
@@ -71,6 +74,8 @@ export class CarEntity extends GameObjects.Container {
     this.add(new CarStatusEntity(this.scene, 170, -76, this.car.attributes));
     this.detailsEntity.setPosition(170, 92);
     this.add(this.detailsEntity);
+    this.equipmentEntity.setPosition(170, 170);
+    this.add(this.equipmentEntity);
   }
 
   private selectSlot(slot: CarSlot): void {
