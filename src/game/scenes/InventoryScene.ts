@@ -4,6 +4,7 @@ import { ResourceHud } from '@/game/huds/ResourceHud';
 import { ActionProvider } from '@/game/providers/ActionProvider';
 import { InventoryListEntity } from '@/game/entities/InventoryListEntity';
 import { ConfirmationEntity } from '@/game/entities/ConfirmationEntity';
+import { ToastEntity } from '@/game/entities/ToastEntity';
 import type { GameState } from '@/core/domain/GameState';
 import type { CarPartInventoryItem } from '@/core/domain/CarPartInventory';
 
@@ -13,6 +14,7 @@ export class InventoryScene extends Scene {
   private unsubscribeInventory?: () => void;
   private unsubscribeState?: () => void;
   private confirmation?: ConfirmationEntity;
+  private toast?: ToastEntity;
   private latestState?: GameState;
 
   constructor() {
@@ -23,6 +25,7 @@ export class InventoryScene extends Scene {
     this.cameras.main.setBackgroundColor('#ffffff');
 
     this.resourceHud = new ResourceHud(this);
+    this.toast = new ToastEntity(this, this.scale.width / 2, 70);
 
     this.add.text(360, 86, 'Inventory', {
       color: '#111111',
@@ -56,6 +59,7 @@ export class InventoryScene extends Scene {
       this.unsubscribeState?.();
       this.confirmation?.destroy();
       this.inventoryList?.destroy();
+      this.toast?.destroy();
     });
   }
 

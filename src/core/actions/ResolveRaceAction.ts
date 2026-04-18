@@ -1,4 +1,5 @@
 import type { Action } from '../domain/Action';
+import type { AchievementChecker } from '../domain/AchievementChecker';
 import type { GameState } from '../domain/GameState';
 import type { GameStateService } from '../domain/GameStateService';
 import type { RaceCompletion, RaceRepository } from '../domain/RaceRepository';
@@ -12,6 +13,7 @@ export class ResolveRaceAction implements Action<void, RaceResolution | null> {
   constructor(
     private readonly gameStateService: GameStateService,
     private readonly raceRepository: RaceRepository,
+    private readonly achievementChecker: AchievementChecker,
   ) {}
 
   async execute(): Promise<RaceResolution | null> {
@@ -39,7 +41,11 @@ export class ResolveRaceAction implements Action<void, RaceResolution | null> {
       ...current,
       cash: current.cash + completed.reward,
       racePoints: current.racePoints + completed.points,
+      racesCompleted: current.racesCompleted + 1,
+      raceWins: current.raceWins + (completed.position === 1 ? 1 : 0),
     }));
+
+    this.achievementChecker.check();
 
     return {
       state: this.gameStateService.getState(),

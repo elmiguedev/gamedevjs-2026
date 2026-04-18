@@ -8,6 +8,7 @@ import { ResolveRaceAction, type RaceResolution } from '@/core/actions/ResolveRa
 import { RefuelCarAction } from '@/core/actions/RefuelCarAction';
 import { StartRaceAction } from '@/core/actions/StartRaceAction';
 import { Car } from '@/core/domain/Car';
+import type { AchievementChecker } from '@/core/domain/AchievementChecker';
 import type { AchievementRepository } from '@/core/domain/AchievementRepository';
 import type { CarPart } from '@/core/domain/CarPart';
 import type { CarPartRepository } from '@/core/domain/CarPartRepository';
@@ -22,6 +23,7 @@ import { InMemoryCarCraftingRepository } from '@/core/infrastructure/local/InMem
 import { InMemoryAchievementRepository } from '@/core/infrastructure/local/InMemoryAchievementRepository';
 import { InMemoryMechanicProgressRepository } from '@/core/infrastructure/local/InMemoryMechanicProgressRepository';
 import { InMemoryRaceRepository } from '@/core/infrastructure/local/InMemoryRaceRepository';
+import { LocalAchievementChecker } from '@/core/infrastructure/local/LocalAchievementChecker';
 import { LocalGameService } from '@/core/infrastructure/local/LocalGameService';
 
 export class ActionProvider {
@@ -32,6 +34,7 @@ export class ActionProvider {
   private readonly carPartInventoryRepository: CarPartInventoryRepository;
   private readonly carCraftingRepository: CarCraftingRepository;
   private readonly achievementRepository: AchievementRepository;
+  private readonly achievementChecker: AchievementChecker;
   private readonly raceRepository: RaceRepository;
   private readonly mechanicProgressRepository: MechanicProgressRepository;
   private readonly collectScrapAction: CollectScrapAction;
@@ -57,7 +60,19 @@ export class ActionProvider {
       throw new Error('Missing base chassis part');
     }
 
-    this.gameStateService = new LocalGameService({ scrap: 0, cash: 0, fuel: 100, racePoints: 0, car: Car.createInitial(chassisPart) });
+    this.gameStateService = new LocalGameService({
+      scrap: 0,
+      scrapCollected: 0,
+      cash: 0,
+      fuel: 100,
+      racePoints: 0,
+      partsCrafted: 0,
+      craftedWheelParts: 0,
+      racesCompleted: 0,
+      raceWins: 0,
+      car: Car.createInitial(chassisPart),
+    });
+    this.achievementChecker = new LocalAchievementChecker(this.gameStateService, this.achievementRepository);
 
     const initialChassisItem = this.carPartInventoryRepository.add(chassisPart);
     this.carPartInventoryRepository.setEquipped(initialChassisItem.id, true);
@@ -116,20 +131,23 @@ export class ActionProvider {
       }
     }
 
-    this.collectScrapAction = new CollectScrapAction(this.gameStateService);
+    this.achievementChecker.check();
+
+    this.collectScrapAction = new CollectScrapAction(this.gameStateService, this.achievementChecker);
     this.craftCarPartAction = new CraftCarPartAction(
       this.gameStateService,
       this.carPartRepository,
       this.mechanicProgressRepository,
       this.carPartInventoryRepository,
       this.carCraftingRepository,
+      this.achievementChecker,
     );
-    this.claimCraftedPartAction = new ClaimCraftedPartAction(this.carPartInventoryRepository, this.carCraftingRepository);
-    this.equipCarPartAction = new EquipCarPartAction(this.gameStateService, this.carPartInventoryRepository);
-    this.repairCarSlotAction = new RepairCarSlotAction(this.gameStateService);
-    this.refuelCarAction = new RefuelCarAction(this.gameStateService);
-    this.startRaceAction = new StartRaceAction(this.gameStateService, this.raceRepository);
-    this.resolveRaceAction = new ResolveRaceAction(this.gameStateService, this.raceRepository);
+    this.claimCraftedPartAction = new ClaimCraftedPartAction(this.gameStateService, this.carPartInventoryRepository, this.carCraftingRepository, this.achievementChecker);
+    this.equipCarPartAction = new EquipCarPartAction(this.gameStateService, this.carPartInventoryRepository, this.achievementChecker);
+    this.repairCarSlotAction = new RepairCarSlotAction(this.gameStateService, this.achievementChecker);
+    this.refuelCarAction = new RefuelCarAction(this.gameStateService, this.achievementChecker);
+    this.startRaceAction = new StartRaceAction(this.gameStateService, this.raceRepository, this.achievementChecker);
+    this.resolveRaceAction = new ResolveRaceAction(this.gameStateService, this.raceRepository, this.achievementChecker);
     this.getStateAction = new GetStateAction(this.gameStateService);
   }
 

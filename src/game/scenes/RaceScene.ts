@@ -4,6 +4,7 @@ import { RaceListEntity } from '@/game/entities/RaceListEntity';
 import { RaceStatusEntity } from '@/game/entities/RaceStatusEntity';
 import { ResourceHud } from '@/game/huds/ResourceHud';
 import { ActionProvider } from '@/game/providers/ActionProvider';
+import { ToastEntity } from '@/game/entities/ToastEntity';
 import type { GameState } from '@/core/domain/GameState';
 import type { Race } from '@/core/domain/Race';
 
@@ -17,6 +18,7 @@ export class RaceScene extends Scene {
   private raceList?: RaceListEntity;
   private raceStatus?: RaceStatusEntity;
   private statusText?: Phaser.GameObjects.Text;
+  private toast?: ToastEntity;
   private unsubscribeState?: () => void;
   private refreshTimer?: Phaser.Time.TimerEvent;
   private latestState?: GameState;
@@ -35,6 +37,7 @@ export class RaceScene extends Scene {
     this.uiState = { kind: 'idle' };
 
     this.resourceHud = new ResourceHud(this);
+    this.toast = new ToastEntity(this, this.scale.width / 2, 70);
 
     this.add.text(360, 86, 'Races', {
       color: '#111111',
@@ -94,6 +97,7 @@ export class RaceScene extends Scene {
       this.raceList?.destroy();
       this.raceStatus?.destroy();
       this.statusText?.destroy();
+      this.toast?.destroy();
     });
 
     void this.refreshRaces();

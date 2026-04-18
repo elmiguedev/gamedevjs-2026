@@ -2,6 +2,7 @@ import { GameObjects, Scene, type Time } from 'phaser';
 import type { GameState } from '@/core/domain/GameState';
 import { ButtonEntity } from '@/game/entities/ButtonEntity';
 import { MenuEntity } from '@/game/entities/MenuEntity';
+import { ToastEntity } from '@/game/entities/ToastEntity';
 import { ResourceHud } from '@/game/huds/ResourceHud';
 import { ActionProvider } from '@/game/providers/ActionProvider';
 
@@ -16,6 +17,7 @@ export class ScrapScene extends Scene {
   private headerText?: GameObjects.Text;
   private feedbackText?: GameObjects.Text;
   private craftingText?: GameObjects.Text;
+  private toast?: ToastEntity;
   private collectButton?: ButtonEntity;
   private refreshEvent?: Time.TimerEvent;
   private unsubscribeState?: () => void;
@@ -32,6 +34,7 @@ export class ScrapScene extends Scene {
     this.cameras.main.setBackgroundColor('#ffffff');
 
     this.resourceHud = new ResourceHud(this);
+    this.toast = new ToastEntity(this, this.scale.width / 2, 70);
 
     this.add.text(360, 86, 'Scrap Yard', {
       color: '#111111',
@@ -64,6 +67,7 @@ export class ScrapScene extends Scene {
       this.craftingText?.destroy();
       this.craftingText = undefined;
       this.collectButton?.destroy();
+      this.toast?.destroy();
     });
   }
 

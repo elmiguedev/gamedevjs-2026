@@ -4,6 +4,7 @@ import { AchievementCategorySelectorEntity, type AchievementGroup } from '@/game
 import { AchievementHeaderEntity } from '@/game/entities/AchievementHeaderEntity';
 import { AchievementListEntity } from '@/game/entities/AchievementListEntity';
 import { MenuEntity } from '@/game/entities/MenuEntity';
+import { ToastEntity } from '@/game/entities/ToastEntity';
 import { ResourceHud } from '@/game/huds/ResourceHud';
 import { ActionProvider } from '@/game/providers/ActionProvider';
 
@@ -13,6 +14,7 @@ export class AchievementsScene extends Scene {
   private selector?: AchievementCategorySelectorEntity;
   private list?: AchievementListEntity;
   private backButton?: ButtonEntity;
+  private toast?: ToastEntity;
 
   constructor() {
     super('AchievementsScene');
@@ -22,6 +24,7 @@ export class AchievementsScene extends Scene {
     this.cameras.main.setBackgroundColor('#ffffff');
 
     this.resourceHud = new ResourceHud(this);
+    this.toast = new ToastEntity(this, this.scale.width / 2, 70);
     this.header = new AchievementHeaderEntity(this, 360, 100);
     this.add.existing(this.header);
 
@@ -69,8 +72,10 @@ export class AchievementsScene extends Scene {
     this.selector?.destroy();
     this.list?.destroy();
     this.backButton?.destroy();
+    this.toast?.destroy();
     this.selector = undefined;
     this.list = undefined;
     this.backButton = undefined;
+    this.toast = undefined;
   }
 }

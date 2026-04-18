@@ -4,10 +4,12 @@ import { CarEntity } from '@/game/entities/CarEntity';
 import { MenuEntity } from '@/game/entities/MenuEntity';
 import { ResourceHud } from '@/game/huds/ResourceHud';
 import { ActionProvider } from '@/game/providers/ActionProvider';
+import { ToastEntity } from '@/game/entities/ToastEntity';
 
 export class CarScene extends Scene {
   private carEntity?: CarEntity;
   private refuelButton?: ButtonEntity;
+  private toast?: ToastEntity;
   private unsubscribeState?: () => void;
   private refreshTimer?: Phaser.Time.TimerEvent;
 
@@ -19,6 +21,7 @@ export class CarScene extends Scene {
     this.cameras.main.setBackgroundColor('#ffffff');
 
     new ResourceHud(this);
+    this.toast = new ToastEntity(this, this.scale.width / 2, 70);
     void this.loadCar();
 
     this.refuelButton = new ButtonEntity(this, 560, 548, 120, 34, 'Refuel', () => {
@@ -55,6 +58,7 @@ export class CarScene extends Scene {
       this.unsubscribeState?.();
       this.refreshTimer?.remove(false);
       this.refuelButton?.destroy();
+      this.toast?.destroy();
     });
   }
 

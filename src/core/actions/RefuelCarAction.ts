@@ -1,9 +1,13 @@
 import type { Action } from '../domain/Action';
+import type { AchievementChecker } from '../domain/AchievementChecker';
 import type { GameState } from '../domain/GameState';
 import type { GameStateService } from '../domain/GameStateService';
 
 export class RefuelCarAction implements Action<{ amount?: number }, GameState> {
-  constructor(private readonly gameStateService: GameStateService) {}
+  constructor(
+    private readonly gameStateService: GameStateService,
+    private readonly achievementChecker: AchievementChecker,
+  ) {}
 
   async execute(input: { amount?: number } = {}): Promise<GameState> {
     const amount = input.amount ?? Number.POSITIVE_INFINITY;
@@ -19,5 +23,7 @@ export class RefuelCarAction implements Action<{ amount?: number }, GameState> {
         fuel: current.fuel - refuelAmount,
       };
     });
+
+    this.achievementChecker.check();
   }
 }

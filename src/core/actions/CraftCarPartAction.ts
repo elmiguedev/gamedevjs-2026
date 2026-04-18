@@ -1,4 +1,5 @@
 import type { Action } from '../domain/Action';
+import type { AchievementChecker } from '../domain/AchievementChecker';
 import type { CarPart } from '../domain/CarPart';
 import type { GameState } from '../domain/GameState';
 import type { GameStateService } from '../domain/GameStateService';
@@ -14,6 +15,7 @@ export class CraftCarPartAction implements Action<{ partId: string }, CraftingSt
     private readonly mechanicProgressRepository: MechanicProgressRepository,
     private readonly carPartInventoryRepository: CarPartInventoryRepository,
     private readonly carCraftingRepository: CarCraftingRepository,
+    private readonly achievementChecker: AchievementChecker,
   ) {}
 
   async execute(input: { partId: string }): Promise<CraftingStatus> {
@@ -49,6 +51,7 @@ export class CraftCarPartAction implements Action<{ partId: string }, CraftingSt
 
     this.mechanicProgressRepository.addXp(part.xpReward);
     this.carCraftingRepository.start(part);
+    this.achievementChecker.check();
 
     return this.carCraftingRepository.getStatus();
   }

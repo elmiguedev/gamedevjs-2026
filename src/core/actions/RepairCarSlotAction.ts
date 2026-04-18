@@ -1,9 +1,13 @@
 import type { Action } from '../domain/Action';
+import type { AchievementChecker } from '../domain/AchievementChecker';
 import type { GameState } from '../domain/GameState';
 import type { GameStateService } from '../domain/GameStateService';
 
 export class RepairCarSlotAction implements Action<{ slotId: string }, GameState> {
-  constructor(private readonly gameStateService: GameStateService) {}
+  constructor(
+    private readonly gameStateService: GameStateService,
+    private readonly achievementChecker: AchievementChecker,
+  ) {}
 
   async execute(input: { slotId: string }): Promise<GameState> {
     return this.gameStateService.update((current) => {
@@ -30,5 +34,7 @@ export class RepairCarSlotAction implements Action<{ slotId: string }, GameState
 
       return current;
     });
+
+    this.achievementChecker.check();
   }
 }

@@ -9,7 +9,7 @@ export class AchievementRowEntity extends GameObjects.Container {
     panel.setStrokeStyle(1, 0x111111);
 
     const title = this.scene.add.text(12, 10, achievement.title, {
-      color: achievement.unlocked ? '#111111' : '#6b7280',
+      color: achievement.unlocked ? '#111111' : achievement.checked ? '#6b7280' : '#d1d5db',
       fontFamily: 'Arial, sans-serif',
       fontSize: '18px',
       fontStyle: 'bold',
@@ -22,14 +22,14 @@ export class AchievementRowEntity extends GameObjects.Container {
     });
 
     const badge = this.scene.add.text(560, 24, achievement.category.toUpperCase(), {
-      color: achievement.unlocked ? '#111111' : '#6b7280',
+      color: achievement.unlocked ? '#111111' : achievement.checked ? '#6b7280' : '#d1d5db',
       fontFamily: 'Arial, sans-serif',
       fontSize: '12px',
       fontStyle: 'bold',
     }).setOrigin(0.5);
 
-    const status = this.scene.add.text(620, 24, achievement.unlocked ? 'Unlocked' : 'Locked', {
-      color: achievement.unlocked ? '#111111' : '#6b7280',
+    const status = this.scene.add.text(620, 24, achievement.unlocked ? 'Unlocked' : achievement.checked ? 'Locked' : 'Hidden', {
+      color: achievement.unlocked ? '#111111' : achievement.checked ? '#6b7280' : '#d1d5db',
       fontFamily: 'Arial, sans-serif',
       fontSize: '12px',
     }).setOrigin(1, 0.5);
