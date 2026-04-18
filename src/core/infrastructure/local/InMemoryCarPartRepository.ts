@@ -17,6 +17,7 @@ const PARTS = [
   new CarPart('motor-ionico', 'motor', 'Motor Ionico', { acceleration: 6, speed: 6 }, 850, 320, 3, 30, 28, 'Energia/plan especial'),
   new CarPart('nitro-base', 'nitro', 'Nitro', { acceleration: 3 }, 220, 0, 1, 8, 12, 'Carrera urbana desbloqueada'),
   new CarPart('nitro-fulgor', 'nitro', 'Nitro Fulgor', { acceleration: 5 }, 420, 140, 2, 16, 18, 'Prestigio 1'),
+  new CarPart('aleron-base', 'aleron', 'Aleron Base', { speed: 1, direction: 1 }, 90, 0, 1, 8, 10, 'Inicio'),
 ] as const;
 
 export class InMemoryCarPartRepository implements CarPartRepository {

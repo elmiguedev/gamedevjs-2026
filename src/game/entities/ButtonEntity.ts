@@ -47,11 +47,19 @@ export class ButtonEntity extends GameObjects.Container {
   }
 
   setDisabled(disabled: boolean): void {
+    if (!this.active || !this.background.active || !this.labelText.active) {
+      return;
+    }
+
     this.disabled = disabled;
     this.refreshVisualState();
   }
 
   private refreshVisualState(): void {
+    if (!this.active || !this.background.active || !this.labelText.active) {
+      return;
+    }
+
     if (this.disabled) {
       this.background.setFillStyle(0x9ca3af);
       this.background.setAlpha(0.75);

@@ -6,6 +6,13 @@ export class GetStateAction implements Action<void, GameState> {
   constructor(private readonly gameStateService: GameStateService) {}
 
   async execute(): Promise<GameState> {
-    return this.gameStateService.getState();
+    const state = this.gameStateService.getState();
+    const changed = state.car.tickRepairs();
+
+    if (changed) {
+      this.gameStateService.update((current) => current);
+    }
+
+    return state;
   }
 }

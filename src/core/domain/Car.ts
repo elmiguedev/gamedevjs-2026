@@ -31,22 +31,26 @@ export const zeroCarAttributes = (): CarAttributes => ({
 });
 
 export class Car {
-  constructor(public readonly slots: CarSlots) {}
+  constructor(
+    public readonly slots: CarSlots,
+    public fuel: number = 100,
+    public readonly maxFuel: number = 100,
+  ) {}
 
   static createInitial(chassisPart: CarPart): Car {
     return new Car({
-      chassis: new CarSlot('chasis', chassisPart, null),
+      chassis: new CarSlot('chassis', 'chasis', chassisPart, null),
       wheels: {
-        frontLeft: new CarSlot('rueda'),
-        frontRight: new CarSlot('rueda'),
-        rearLeft: new CarSlot('rueda'),
-        rearRight: new CarSlot('rueda'),
+        frontLeft: new CarSlot('frontLeft', 'rueda'),
+        frontRight: new CarSlot('frontRight', 'rueda'),
+        rearLeft: new CarSlot('rearLeft', 'rueda'),
+        rearRight: new CarSlot('rearRight', 'rueda'),
       },
-      engine: new CarSlot('motor'),
-      steering: new CarSlot('direccion'),
-      nitro: new CarSlot('nitro'),
-      spoiler: new CarSlot('aleron'),
-    });
+      engine: new CarSlot('engine', 'motor'),
+      steering: new CarSlot('steering', 'direccion'),
+      nitro: new CarSlot('nitro', 'nitro'),
+      spoiler: new CarSlot('spoiler', 'aleron'),
+    }, 100, 100);
   }
 
   get attributes(): CarAttributes {
@@ -64,6 +68,68 @@ export class Car {
     }
 
     return total;
+  }
+
+  hasCompleteCar(): boolean {
+    return [
+      this.slots.chassis,
+      this.slots.wheels.frontLeft,
+      this.slots.wheels.frontRight,
+      this.slots.wheels.rearLeft,
+      this.slots.wheels.rearRight,
+      this.slots.engine,
+      this.slots.steering,
+      this.slots.nitro,
+      this.slots.spoiler,
+    ].every((slot) => slot.part !== null);
+  }
+
+  hasBrokenPart(): boolean {
+    return this.listSlots().some((slot) => slot.part !== null && slot.condition <= 0);
+  }
+
+  canRace(): boolean {
+    return this.listSlots().every((slot) => slot.part !== null && slot.isUsable());
+  }
+
+  hasFuel(amount: number): boolean {
+    return this.fuel >= amount;
+  }
+
+  consumeFuel(amount: number): void {
+    this.fuel = Math.max(0, this.fuel - amount);
+  }
+
+  refillFuel(amount: number): void {
+    this.fuel = Math.min(this.maxFuel, this.fuel + amount);
+  }
+
+  applyRaceDamage(amounts: Partial<Record<CarPartType, number>>): void {
+    for (const [key, value] of Object.entries(amounts)) {
+      if (typeof value !== 'number') {
+        continue;
+      }
+
+      if (key === 'rueda') {
+        this.slots.wheels.frontLeft.applyDamage(value);
+        this.slots.wheels.frontRight.applyDamage(value);
+        this.slots.wheels.rearLeft.applyDamage(value);
+        this.slots.wheels.rearRight.applyDamage(value);
+        continue;
+      }
+
+      const slot = this.findSlotForPart(key as CarPartType);
+      slot?.applyDamage(value);
+    }
+  }
+
+  tickRepairs(now: number = Date.now()): boolean {
+    return this.listSlots().some((slot) => slot.tickRepair(now));
+  }
+
+  getSlotById(slotId: string): CarSlot | null {
+    const slots = this.listSlots();
+    return slots.find((slot) => slot.id === slotId) ?? null;
   }
 
   equipItem(item: CarPartInventoryItem): string | null {

@@ -32,6 +32,7 @@ export class ResourceHud {
     const mechanic = ActionProvider.getMechanicProgressRepository().get();
     const xpToNext = ActionProvider.getMechanicProgressRepository().getXpToNextLevel();
     const craftingStatus = ActionProvider.getCraftingStatus();
+    const stateLine = [`Cash: ${state.cash}`, `Scrap: ${state.scrap}`, `Stock Fuel: ${state.fuel}`, `Tank: ${state.car.fuel}/${state.car.maxFuel}`, `Pts: ${state.racePoints}`];
     const craftingLine = craftingStatus.active
       ? `Craft: ${craftingStatus.active.part.name} ${Math.min(100, Math.floor(((Date.now() - craftingStatus.active.startedAt) / 1000 / craftingStatus.active.craftTimeSeconds) * 100))}%`
       : craftingStatus.ready
@@ -39,8 +40,7 @@ export class ResourceHud {
         : 'Craft: Idle';
 
     this.text?.setText([
-      `Cash: ${state.cash}`,
-      `Scrap: ${state.scrap}`,
+      ...stateLine,
       `Mech: Lv ${mechanic.level} | XP ${mechanic.xp}/${xpToNext}`,
       craftingLine,
     ]);

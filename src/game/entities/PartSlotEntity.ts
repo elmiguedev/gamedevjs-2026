@@ -7,11 +7,12 @@ const SLOT_COLORS: Record<CarPartType, number> = {
   rueda: 0x111111,
   nitro: 0xfed7aa,
   motor: 0xe9d5ff,
-  direction: 0xcffafe,
+  direccion: 0xcffafe,
   spoiler: 0xd9f99d,
 };
 
 export class PartSlotEntity extends GameObjects.Container {
+  private readonly sceneRef: Scene;
   constructor(
     scene: Scene,
     x: number,
@@ -22,11 +23,21 @@ export class PartSlotEntity extends GameObjects.Container {
     private readonly onSelect?: (slot: CarSlot) => void,
   ) {
     super(scene, x, y);
+    this.sceneRef = scene;
 
     this.render();
     this.setSize(this.width, this.height);
     this.setInteractive(new Geom.Rectangle(-this.width / 2, -this.height / 2, this.width, this.height), Geom.Rectangle.Contains);
     this.on('pointerdown', () => this.onSelect?.(this.slot));
+  }
+
+  refresh(): void {
+    if (!this.scene || !this.active) {
+      return;
+    }
+
+    this.removeAll(true);
+    this.render();
   }
 
   private render(): void {
@@ -41,14 +52,15 @@ export class PartSlotEntity extends GameObjects.Container {
   private renderFilled(): void {
     const fill = this.slot.type === 'rueda' ? 0x111111 : SLOT_COLORS[this.slot.type];
 
-    const block = this.scene.add.rectangle(0, 0, this.width, this.height, fill);
+    const block = this.sceneRef.add.rectangle(0, 0, this.width, this.height, fill).setOrigin(0.5);
     block.setStrokeStyle(3, 0x111111);
     this.add(block);
   }
 
   private renderEmpty(): void {
-    const graphics = this.scene.add.graphics();
+    const graphics = this.sceneRef.add.graphics();
     graphics.lineStyle(2, 0x111111, 1);
+    graphics.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
     this.drawDashedRectangle(graphics, this.width, this.height);
     this.add(graphics);
   }

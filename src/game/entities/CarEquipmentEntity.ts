@@ -36,6 +36,10 @@ export class CarEquipmentEntity extends GameObjects.Container {
   }
 
   update(car: Car): void {
+    if (!this.active || !this.bodyText.active) {
+      return;
+    }
+
     this.bodyText.setText(this.formatCar(car));
   }
 
@@ -76,6 +80,8 @@ export class CarEquipmentEntity extends GameObjects.Container {
       .map(([code, value]) => `${code} +${value}`)
       .join(', ');
 
-    return `${label}: ${slot.part.name}${bonus ? ` (${bonus})` : ''}`;
+    const condition = slot.isRepairing() ? `repairing` : `${slot.condition}%`;
+
+    return `${label}: ${slot.part.name}${bonus ? ` (${bonus})` : ''} [${condition}]`;
   }
 }
