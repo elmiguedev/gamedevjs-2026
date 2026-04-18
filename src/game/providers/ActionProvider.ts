@@ -8,6 +8,7 @@ import { ResolveRaceAction, type RaceResolution } from '@/core/actions/ResolveRa
 import { RefuelCarAction } from '@/core/actions/RefuelCarAction';
 import { StartRaceAction } from '@/core/actions/StartRaceAction';
 import { Car } from '@/core/domain/Car';
+import type { AchievementRepository } from '@/core/domain/AchievementRepository';
 import type { CarPart } from '@/core/domain/CarPart';
 import type { CarPartRepository } from '@/core/domain/CarPartRepository';
 import type { CarPartInventoryRepository } from '@/core/domain/CarPartInventoryRepository';
@@ -18,6 +19,7 @@ import type { GameState } from '@/core/domain/GameState';
 import { InMemoryCarPartInventoryRepository } from '@/core/infrastructure/local/InMemoryCarPartInventoryRepository';
 import { InMemoryCarPartRepository } from '@/core/infrastructure/local/InMemoryCarPartRepository';
 import { InMemoryCarCraftingRepository } from '@/core/infrastructure/local/InMemoryCarCraftingRepository';
+import { InMemoryAchievementRepository } from '@/core/infrastructure/local/InMemoryAchievementRepository';
 import { InMemoryMechanicProgressRepository } from '@/core/infrastructure/local/InMemoryMechanicProgressRepository';
 import { InMemoryRaceRepository } from '@/core/infrastructure/local/InMemoryRaceRepository';
 import { LocalGameService } from '@/core/infrastructure/local/LocalGameService';
@@ -29,6 +31,7 @@ export class ActionProvider {
   private readonly carPartRepository: CarPartRepository;
   private readonly carPartInventoryRepository: CarPartInventoryRepository;
   private readonly carCraftingRepository: CarCraftingRepository;
+  private readonly achievementRepository: AchievementRepository;
   private readonly raceRepository: RaceRepository;
   private readonly mechanicProgressRepository: MechanicProgressRepository;
   private readonly collectScrapAction: CollectScrapAction;
@@ -45,6 +48,7 @@ export class ActionProvider {
     this.carPartRepository = new InMemoryCarPartRepository();
     this.carPartInventoryRepository = new InMemoryCarPartInventoryRepository();
     this.carCraftingRepository = new InMemoryCarCraftingRepository();
+    this.achievementRepository = new InMemoryAchievementRepository();
     this.mechanicProgressRepository = new InMemoryMechanicProgressRepository();
     this.raceRepository = new InMemoryRaceRepository();
     const chassisPart = this.carPartRepository.findByType('chasis')[0];
@@ -155,6 +159,10 @@ export class ActionProvider {
 
   static getCraftingStatus(): CraftingStatus {
     return ActionProvider.instance.carCraftingRepository.getStatus();
+  }
+
+  static getAchievementRepository(): AchievementRepository {
+    return ActionProvider.instance.achievementRepository;
   }
 
   static craftCarPart(partId: string): Promise<CraftingStatus> {

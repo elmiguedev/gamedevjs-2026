@@ -6,6 +6,7 @@ export class MenuEntity {
   private scrapButton?: ButtonEntity;
   private inventoryButton?: ButtonEntity;
   private raceButton?: ButtonEntity;
+  private achievementsButton?: ButtonEntity;
 
   constructor(private readonly scene: Scene) {
     this.create();
@@ -19,7 +20,7 @@ export class MenuEntity {
     const buttonWidth = 100;
     const buttonHeight = 52;
     const gap = 10;
-    const startX = width / 2 - (buttonWidth * 2 + gap * 1.5);
+    const startX = width / 2 - (buttonWidth * 2.5 + gap * 2);
 
     const background = this.scene.add.rectangle(width / 2, menuY, width - 24, 100, 0xf7f7f7);
     background.setStrokeStyle(2, 0x111111);
@@ -31,6 +32,7 @@ export class MenuEntity {
     this.scrapButton = this.createButton(startX + buttonWidth + gap, menuY, buttonWidth, buttonHeight, 'Scrap', 'ScrapScene');
     this.inventoryButton = this.createButton(startX + (buttonWidth + gap) * 2, menuY, buttonWidth, buttonHeight, 'Inventory', 'InventoryScene');
     this.raceButton = this.createButton(startX + (buttonWidth + gap) * 3, menuY, buttonWidth, buttonHeight, 'Race', 'RaceScene');
+    this.achievementsButton = this.createButton(startX + (buttonWidth + gap) * 4, menuY, buttonWidth, buttonHeight, 'Achievements', 'AchievementsScene');
   }
 
   private createButton(x: number, y: number, width: number, height: number, label: string, targetScene: string): ButtonEntity {

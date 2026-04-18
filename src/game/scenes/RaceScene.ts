@@ -56,6 +56,7 @@ export class RaceScene extends Scene {
     this.raceStatus = new RaceStatusEntity(this, 40, 180, () => {
       this.uiState = { kind: 'idle' };
       this.resultText?.setText('');
+      this.raceList?.setVisible(true);
       this.refreshRaces();
     });
     this.raceStatus.hide();
@@ -66,8 +67,6 @@ export class RaceScene extends Scene {
       fontSize: '16px',
       fontStyle: 'bold',
     });
-
-    this.raceStatus.hide();
 
     this.unsubscribeState = ActionProvider.subscribeState((state) => {
       this.latestState = state;

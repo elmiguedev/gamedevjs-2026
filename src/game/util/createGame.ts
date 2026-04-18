@@ -3,6 +3,7 @@ import { CarScene } from '@/game/scenes/CarScene';
 import { RaceScene } from '@/game/scenes/RaceScene';
 import { ScrapScene } from '@/game/scenes/ScrapScene';
 import { InventoryScene } from '@/game/scenes/InventoryScene';
+import { AchievementsScene } from '@/game/scenes/AchievementsScene';
 
 export const createGame = (parent: string): Game => {
   return new Game({
@@ -18,6 +19,6 @@ export const createGame = (parent: string): Game => {
       mode: Scale.FIT,
       autoCenter: Scale.CENTER_BOTH,
     },
-    scene: [ScrapScene, CarScene, InventoryScene, RaceScene],
+    scene: [ScrapScene, CarScene, InventoryScene, RaceScene, AchievementsScene],
   });
 };
