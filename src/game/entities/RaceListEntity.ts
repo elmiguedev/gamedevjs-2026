@@ -1,6 +1,9 @@
 import { GameObjects, Scene } from 'phaser';
 import type { Race } from '@/core/domain/Race';
 import { RaceCardEntity } from '@/game/entities/RaceCardEntity';
+import type { UiIconName } from '@/game/assets/spritesheets';
+
+type RaceCardStatus = { label: string; disabled: boolean; icon: UiIconName };
 
 export class RaceListEntity extends GameObjects.Container {
   private cards: RaceCardEntity[] = [];
@@ -16,7 +19,7 @@ export class RaceListEntity extends GameObjects.Container {
     this.scene.add.existing(this);
   }
 
-  setData(races: Race[], statusResolver: (race: Race) => { label: string; disabled: boolean }): void {
+  setData(races: Race[], statusResolver: (race: Race) => RaceCardStatus): void {
     this.clearCards();
     this.races = races;
 
@@ -27,11 +30,11 @@ export class RaceListEntity extends GameObjects.Container {
       card.setStatus(statusResolver(race));
       this.cards.push(card);
       this.add(card);
-      yOffset += 108;
+      yOffset += 122;
     });
   }
 
-  updateStatuses(statusResolver: (race: Race) => { label: string; disabled: boolean }): void {
+  updateStatuses(statusResolver: (race: Race) => RaceCardStatus): void {
     this.cards.forEach((card) => {
       const race = this.races.find((entry) => entry.id === card.getRaceId());
 

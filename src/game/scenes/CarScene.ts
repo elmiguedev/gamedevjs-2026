@@ -34,6 +34,11 @@ export class CarScene extends Scene {
   // ----------------
 
   create(): void {
+    this.currentState = undefined;
+    this.initialized = false;
+    this.carEntity = undefined;
+    this.detailsEntity = undefined;
+
     this.createBackground();
     this.createHud();
     this.createMenu();
@@ -106,6 +111,10 @@ export class CarScene extends Scene {
       (slotId) => {
         void ActionProvider.repairCarSlot(slotId).then((updatedState) => {
           this.currentState = updatedState;
+          if (!this.sys.isActive()) {
+            return;
+          }
+
           this.refreshScene();
         });
       },
@@ -129,9 +138,14 @@ export class CarScene extends Scene {
 
   private destroyScene(): void {
     this.unsubscribeState?.();
-    this.resourceHud?.destroy();
     this.carEntity?.destroy();
     this.detailsEntity?.destroy();
+    this.unsubscribeState = undefined;
+    this.resourceHud = undefined;
+    this.carEntity = undefined;
+    this.detailsEntity = undefined;
+    this.currentState = undefined;
+    this.initialized = false;
   }
 
   private findSlotById(state: GameState, slotId: string): CarSlot | null {

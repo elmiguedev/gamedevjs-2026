@@ -7,6 +7,7 @@ import { ActionProvider } from '@/game/providers/ActionProvider';
 import { ToastEntity } from '@/game/entities/ToastEntity';
 import type { GameState } from '@/core/domain/GameState';
 import type { Race } from '@/core/domain/Race';
+import type { UiIconName } from '@/game/assets/spritesheets';
 
 type RaceUiState =
   | { kind: 'idle' }
@@ -48,32 +49,31 @@ export class RaceScene extends Scene {
     this.resourceHud = new ResourceHud(this);
     this.toast = new ToastEntity(this, this.scale.width / 2, 70);
 
-    this.add.text(360, 86, 'Races', {
+    this.add.text(this.scale.width / 2, 94, 'Races', {
       color: '#111111',
       fontFamily: 'Arial, sans-serif',
-      fontSize: '36px',
+      fontSize: '30px',
       fontStyle: 'bold',
     }).setOrigin(0.5);
 
-    this.add.text(360, 124, 'Street races are automatic and have cooldowns.', {
+    this.add.text(this.scale.width / 2, 128, 'Street races run automatically.', {
       color: '#444444',
       fontFamily: 'Arial, sans-serif',
-      fontSize: '16px',
+      fontSize: '15px',
     }).setOrigin(0.5);
 
-    this.raceList = new RaceListEntity(this, 40, 180, (raceId) => {
+    this.raceList = new RaceListEntity(this, 40, 168, (raceId) => {
       void this.enterRace(raceId);
     });
 
-    this.raceStatus = new RaceStatusEntity(this, 40, 180, () => {
+    this.raceStatus = new RaceStatusEntity(this, 40, 168, () => {
       this.uiState = { kind: 'idle' };
-      this.resultText?.setText('');
       this.raceList?.setVisible(true);
       this.refreshRaces();
     });
     this.raceStatus.hide();
 
-    this.statusText = this.add.text(40, 568, '', {
+    this.statusText = this.add.text(40, 552, '', {
       color: '#111111',
       fontFamily: 'Arial, sans-serif',
       fontSize: '16px',
@@ -183,26 +183,26 @@ export class RaceScene extends Scene {
       const cooldown = repo.getRaceCooldownRemaining(race.id);
 
       if (cooldown > 0) {
-        return { label: `Cooldown ${cooldown}s`, disabled: true };
+        return { label: `Cooldown ${cooldown}s`, disabled: true, icon: 'cooldown' satisfies UiIconName };
       }
 
       if (!state.car.hasCompleteCar()) {
-        return { label: 'Need full car', disabled: true };
+        return { label: 'Need full car', disabled: true, icon: 'needFullCar' satisfies UiIconName };
       }
 
       if (!state.car.canRace()) {
-        return { label: 'Need repair', disabled: true };
+        return { label: 'Need repair', disabled: true, icon: 'needRepair' satisfies UiIconName };
       }
 
       if (!state.car.hasFuel(race.fuelMin)) {
-        return { label: 'Need fuel', disabled: true };
+        return { label: 'Need fuel', disabled: true, icon: 'needFuel' satisfies UiIconName };
       }
 
       if (race.entryFee > state.cash) {
-        return { label: 'Need cash', disabled: true };
+        return { label: 'Need cash', disabled: true, icon: 'needCash' satisfies UiIconName };
       }
 
-      return { label: 'Enter', disabled: false };
+      return { label: 'Enter', disabled: false, icon: 'raceFlag' satisfies UiIconName };
     };
 
     if (!this.racesRendered) {
