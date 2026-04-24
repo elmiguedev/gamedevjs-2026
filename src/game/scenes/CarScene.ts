@@ -90,7 +90,7 @@ export class CarScene extends Scene {
 
   private buildCar(state: GameState): void {
 
-    this.carEntity = new CarEntity(this, 240, 252, state.car, {
+    this.carEntity = new CarEntity(this, 100, 120, state.car, {
       selectedSlotId: this.selectedSlotId,
       onSelectSlot: (slot) => {
         this.selectedSlotId = slot.id;

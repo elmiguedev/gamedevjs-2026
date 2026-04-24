@@ -46,30 +46,38 @@ export class CarEntity extends GameObjects.Container {
   // ----------------
 
   createDraft() {
-    this.draft = this.scene.add.image(54, 36, 'car-draft');
-    this.draft.setOrigin(0.5);
+    this.draft = this.scene.add.image(100, 0, 'car-draft');
+    this.draft.setOrigin(0);
     this.add(this.draft);
   }
 
   createSlots() {
-    const slots: Array<{ slot: CarSlot; y: number }> = [
-      { slot: this.car.slots.chassis, y: -112 },
-      { slot: this.car.slots.engine, y: -84 },
-      { slot: this.car.slots.steering, y: -56 },
-      { slot: this.car.slots.nitro, y: -28 },
-      { slot: this.car.slots.wheels.frontLeft, y: 0 },
-      { slot: this.car.slots.wheels.frontRight, y: 28 },
-      { slot: this.car.slots.wheels.rearLeft, y: 56 },
-      { slot: this.car.slots.wheels.rearRight, y: 84 },
-      { slot: this.car.slots.spoiler, y: 112 },
-    ];
+    const baseX = 0;
+    const baseY = 0;
+    const stepY = 70;
 
+    this.createSlot(baseX, baseY + stepY, this.car.slots.chassis);
+    this.createSlot(baseX, baseY, this.car.slots.engine);
+    this.createSlot(baseX, baseY + stepY * 2, this.car.slots.steering);
+    this.createSlot(baseX, baseY + stepY * 3, this.car.slots.nitro);
+    this.createSlot(baseX, baseY + stepY * 4, this.car.slots.spoiler);
+    this.createSlot(baseX, baseY + stepY * 5, this.car.slots.wheels.frontLeft);
+  }
 
-    slots.forEach(({ slot, y: slotY }) => {
-      const card = new CarSlotCardEntity(this.scene, -154, slotY, 96, 28, slot, (selectedSlot) => this.carOptions.onSelectSlot(selectedSlot));
-      this.slotCards.push({ slotId: slot.id, entity: card });
-      this.add(card);
-    });
+  createSlot(x: number, y: number, slot: CarSlot) {
+    const cardWidth = 150;
+    const cardHeight = 60;
+    const card = new CarSlotCardEntity(
+      this.scene,
+      x,
+      y,
+      cardWidth,
+      cardHeight,
+      slot,
+      (selectedSlot) => this.carOptions.onSelectSlot(selectedSlot)
+    );
+    this.slotCards.push({ slotId: slot.id, entity: card });
+    this.add(card);
   }
 
   // behavior methods
