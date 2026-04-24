@@ -1,59 +1,110 @@
 import type { GameObjects, Scene, Time } from 'phaser';
 import type { GameState } from '@/core/domain/GameState';
+import { IconEntity } from '@/game/entities/IconEntity';
 import { ActionProvider } from '@/game/providers/ActionProvider';
 
 export class ResourceHud {
-  private text?: GameObjects.Text;
+  private readonly levelIcon: IconEntity<'icons'>;
+  private readonly levelText: GameObjects.Text;
+  private readonly levelXpText: GameObjects.Text;
+
+  private readonly scrapIcon: IconEntity<'icons'>;
+  private readonly scrapText: GameObjects.Text;
+
+  private readonly cashIcon: IconEntity<'icons'>;
+  private readonly cashText: GameObjects.Text;
+
+  private readonly fuelIcon: IconEntity<'icons'>;
+  private readonly fuelText: GameObjects.Text;
+
   private unsubscribe?: () => void;
   private readonly progressTimer: Time.TimerEvent;
 
   constructor(private readonly scene: Scene) {
-    this.create();
+    const y = 48;
+
+    this.levelIcon = new IconEntity(this.scene, 34, y, { sheet: 'icons', icon: 'mechanicLevel' });
+    this.levelIcon.setDisplaySize(20, 20);
+    this.levelText = this.scene.add.text(56, y - 8, 'LV 0', {
+      color: '#111111',
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '18px',
+      fontStyle: 'bold',
+    }).setOrigin(0, 0.5);
+    this.levelXpText = this.scene.add.text(56, y + 12, '0 / 0 XP', {
+      color: '#444444',
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '11px',
+    }).setOrigin(0, 0.5);
+
+    this.scrapIcon = new IconEntity(this.scene, 250, y, { sheet: 'icons', icon: 'scrap' });
+    this.scrapIcon.setDisplaySize(20, 20);
+    this.scrapText = this.scene.add.text(270, y, '0', {
+      color: '#111111',
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '18px',
+      fontStyle: 'bold',
+    }).setOrigin(0, 0.5);
+
+    this.cashIcon = new IconEntity(this.scene, 390, y, { sheet: 'icons', icon: 'cash' });
+    this.cashIcon.setDisplaySize(20, 20);
+    this.cashText = this.scene.add.text(410, y, '0', {
+      color: '#111111',
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '18px',
+      fontStyle: 'bold',
+    }).setOrigin(0, 0.5);
+
+    this.fuelIcon = new IconEntity(this.scene, 530, y, { sheet: 'icons', icon: 'fuel' });
+    this.fuelIcon.setDisplaySize(20, 20);
+    this.fuelText = this.scene.add.text(550, y, '0 / 0', {
+      color: '#111111',
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '18px',
+      fontStyle: 'bold',
+    }).setOrigin(0, 0.5);
+
     this.unsubscribe = ActionProvider.subscribeState((state) => this.update(state));
     this.progressTimer = this.scene.time.addEvent({
       delay: 1000,
       loop: true,
-      callback: () => this.refreshState(),
+      callback: () => void this.refreshState(),
     });
 
     this.scene.events.once('shutdown', () => this.destroy());
   }
 
-  create(): void {
-    this.text = this.scene.add.text(16, 16, '', {
-      color: '#111111',
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '18px',
-    });
-    this.text.setDepth(10);
-  }
-
   update(state: GameState): void {
     const mechanic = ActionProvider.getMechanicProgressRepository().get();
     const xpToNext = ActionProvider.getMechanicProgressRepository().getXpToNextLevel();
-    const craftingStatus = ActionProvider.getCraftingStatus();
-    const stateLine = [`Cash: ${state.cash}`, `Scrap: ${state.scrap}`, `Stock Fuel: ${state.fuel}`, `Tank: ${state.car.fuel}/${state.car.maxFuel}`, `Pts: ${state.racePoints}`];
-    const craftingLine = craftingStatus.active
-      ? `Craft: ${craftingStatus.active.part.name} ${Math.min(100, Math.floor(((Date.now() - craftingStatus.active.startedAt) / 1000 / craftingStatus.active.craftTimeSeconds) * 100))}%`
-      : craftingStatus.ready
-        ? `Craft: Ready - ${craftingStatus.ready.name}`
-        : 'Craft: Idle';
 
-    this.text?.setText([
-      ...stateLine,
-      `Mech: Lv ${mechanic.level} | XP ${mechanic.xp}/${xpToNext}`,
-      craftingLine,
-    ]);
+    this.levelText.setText(`LV ${mechanic.level}`);
+    this.levelXpText.setText(`${mechanic.xp} / ${xpToNext} XP`);
+    this.scrapText.setText(String(state.scrap));
+    this.cashText.setText(String(state.cash));
+    this.fuelText.setText(`${state.car.fuel} / ${state.car.maxFuel}`);
   }
 
   async refreshState(): Promise<void> {
     const state = await ActionProvider.getState();
+    if (!this.scene.sys.isActive()) {
+      return;
+    }
+
     this.update(state);
   }
 
   destroy(): void {
     this.unsubscribe?.();
     this.progressTimer.remove(false);
-    this.text?.destroy();
+    this.levelIcon.destroy();
+    this.levelText.destroy();
+    this.levelXpText.destroy();
+    this.scrapIcon.destroy();
+    this.scrapText.destroy();
+    this.cashIcon.destroy();
+    this.cashText.destroy();
+    this.fuelIcon.destroy();
+    this.fuelText.destroy();
   }
 }
