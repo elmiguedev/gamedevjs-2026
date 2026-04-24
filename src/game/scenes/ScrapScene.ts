@@ -5,6 +5,12 @@ import { MenuEntity } from '@/game/entities/MenuEntity';
 import { ToastEntity } from '@/game/entities/ToastEntity';
 import { ResourceHud } from '@/game/huds/ResourceHud';
 import { ActionProvider } from '@/game/providers/ActionProvider';
+import { IconEntity } from '@/game/entities/IconEntity';
+
+const CONTENT_X = 40;
+const CONTENT_WIDTH = 400;
+const WORKSHOP_START_Y = 420;
+const WORKSHOP_ROW_STEP = 52;
 
 type WorkshopRow = {
   container: GameObjects.Container;
@@ -22,6 +28,7 @@ export class ScrapScene extends Scene {
   private craftingText?: GameObjects.Text;
   private toast?: ToastEntity;
   private collectButton?: ButtonEntity;
+  private collectIcon?: IconEntity<'icons'>;
   private refreshEvent?: Time.TimerEvent;
   private unsubscribeState?: () => void;
   private autoClaiming = false;
@@ -41,22 +48,28 @@ export class ScrapScene extends Scene {
 
   create(): void {
     this.cameras.main.setBackgroundColor('#ffffff');
+    this.rows = [];
+    this.autoClaiming = false;
 
     this.resourceHud = new ResourceHud(this);
     this.toast = new ToastEntity(this, this.scale.width / 2, 70);
 
-    this.add.text(360, 86, 'Scrap Yard', {
+    this.add.text(this.scale.width / 2, 94, 'Scrap Yard', {
       color: '#111111',
       fontFamily: 'Arial, sans-serif',
-      fontSize: '36px',
+      fontSize: '30px',
       fontStyle: 'bold',
     }).setOrigin(0.5);
 
-    this.add.text(360, 124, 'Craft parts, gain mechanic XP, and store them in your inventory.', {
+    this.add.text(this.scale.width / 2, 126, 'Collect scrap and craft car parts.', {
       color: '#444444',
       fontFamily: 'Arial, sans-serif',
-      fontSize: '16px',
+      fontSize: '15px',
     }).setOrigin(0.5);
+
+    const scrapyard = this.add.image(this.scale.width / 2, 246, 'scrapyard');
+    scrapyard.setDisplaySize(320, 213);
+    scrapyard.setDepth(1);
 
     new MenuEntity(this);
 
@@ -75,7 +88,6 @@ export class ScrapScene extends Scene {
       this.clearWorkshop();
       this.craftingText?.destroy();
       this.craftingText = undefined;
-      this.collectButton?.destroy();
       this.toast?.destroy();
     });
   }
@@ -86,35 +98,50 @@ export class ScrapScene extends Scene {
   private renderWorkshop(gameState: GameState): void {
     this.clearWorkshop();
 
-    const collectY = this.scale.height - 590;
-
-    this.collectButton = new ButtonEntity(this, 360, collectY, 120, 36, 'Collect', () => {
+    this.collectButton = new ButtonEntity(this, this.scale.width / 2, 346, 150, 38, 'Collect', () => {
       void ActionProvider.collectScrap();
     });
+    this.collectButton.setDepth(6);
+    this.collectIcon = new IconEntity(this, this.scale.width / 2 - 52, 346, { sheet: 'icons', icon: 'collectScrap' });
+    this.collectIcon.setDisplaySize(22, 22);
+    this.collectIcon.setDepth(7);
 
     const parts = ActionProvider.getCarPartRepository().findAll();
     const progress = ActionProvider.getMechanicProgressRepository().get();
     const craftableParts = parts.filter((part) => progress.level >= part.requiredLevel);
     const availableParts = craftableParts.filter((part) => part.scrapCost <= gameState.scrap && part.cashCost <= gameState.cash);
     const craftBusy = ActionProvider.getCraftingStatus().active !== null;
-    this.headerText = this.add.text(40, 194, 'Craftable Parts', {
+    this.headerText = this.add.text(CONTENT_X, 382, 'Craftable Parts', {
       color: '#111111',
       fontFamily: 'Arial, sans-serif',
       fontSize: '18px',
       fontStyle: 'bold',
     });
 
-    let y = 230;
+    let y = WORKSHOP_START_Y;
 
     availableParts.forEach((part) => {
-      const row = this.add.container(0, y);
-      const label = this.add.text(40, 0, `${part.name} | Lv ${part.requiredLevel} | Scrap ${part.scrapCost} | Time ${part.craftTimeSeconds}s`, {
+      const row = this.add.container(CONTENT_X, y);
+      const panel = this.add.rectangle(0, 0, CONTENT_WIDTH, 44, 0xffffff).setOrigin(0, 0.5);
+      panel.setStrokeStyle(1, 0x111111);
+
+      const name = this.add.text(12, -9, part.name, {
         color: '#111111',
         fontFamily: 'Arial, sans-serif',
-        fontSize: '14px',
+        fontSize: '13px',
+        fontStyle: 'bold',
       }).setOrigin(0, 0.5);
 
-      const craftButton = new ButtonEntity(this, 620, 0, 92, 30, 'Craft', () => {
+      const details = this.add.text(12, 10, `Lv ${part.requiredLevel} | Scrap ${part.scrapCost} | Cash ${part.cashCost} | ${part.craftTimeSeconds}s`, {
+        color: '#444444',
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '11px',
+      }).setOrigin(0, 0.5);
+
+      const craftIcon = new IconEntity(this, 292, 0, { sheet: 'icons', icon: 'craft' });
+      craftIcon.setDisplaySize(18, 18);
+
+      const craftButton = new ButtonEntity(this, 354, 0, 76, 30, 'Craft', () => {
         void ActionProvider.craftCarPart(part.id)
           .then(() => {
             this.updateCraftingStatus();
@@ -125,22 +152,23 @@ export class ScrapScene extends Scene {
           });
       }, craftBusy);
 
-      row.add([label, craftButton]);
+      row.add([panel, name, details, craftIcon, craftButton]);
       this.rows.push({ container: row, craftButton });
-      y += 44;
+      y += WORKSHOP_ROW_STEP;
     });
 
-    this.feedbackText = this.add.text(40, y + 18, availableParts.length ? '' : 'No available parts with current resources.', {
+    this.feedbackText = this.add.text(CONTENT_X, y + 8, availableParts.length ? '' : 'No available parts with current resources.', {
       color: '#111111',
       fontFamily: 'Arial, sans-serif',
       fontSize: '14px',
+      wordWrap: { width: CONTENT_WIDTH },
     });
 
   }
 
   private updateCraftingStatus(): void {
     const status = ActionProvider.getCraftingStatus();
-    const baseY = 230 + Math.max(1, this.rows.length) * 44 + 20;
+    const baseY = WORKSHOP_START_Y + Math.max(1, this.rows.length) * WORKSHOP_ROW_STEP + 14;
 
     if (status.active) {
       const elapsed = (Date.now() - status.active.startedAt) / 1000;
@@ -183,10 +211,12 @@ export class ScrapScene extends Scene {
     this.headerText?.destroy();
     this.feedbackText?.destroy();
     this.collectButton?.destroy();
+    this.collectIcon?.destroy();
 
     this.headerText = undefined;
     this.feedbackText = undefined;
     this.collectButton = undefined;
+    this.collectIcon = undefined;
   }
 
   private setCraftButtonsDisabled(disabled: boolean): void {
@@ -196,16 +226,17 @@ export class ScrapScene extends Scene {
   private ensureCraftingText(y: number, value: string): void {
     if (!this.craftingText || !this.craftingText.active) {
       this.craftingText?.destroy();
-      this.craftingText = this.add.text(40, y, value, {
+      this.craftingText = this.add.text(CONTENT_X, y, value, {
         color: '#111111',
         fontFamily: 'Arial, sans-serif',
         fontSize: '16px',
         fontStyle: 'bold',
+        wordWrap: { width: CONTENT_WIDTH },
       });
       return;
     }
 
-    this.craftingText.setPosition(40, y);
+    this.craftingText.setPosition(CONTENT_X, y);
     this.craftingText.setText(value);
   }
 
