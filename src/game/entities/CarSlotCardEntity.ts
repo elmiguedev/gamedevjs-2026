@@ -24,31 +24,31 @@ export class CarSlotCardEntity extends GameObjects.Container {
     this.border = this.scene.add.graphics();
     this.drawCardBorder(width, height);
 
-    this.titleText = this.scene.add.text(0, -height / 2 + 10, this.formatTitle(slot), {
-      color: '#111111',
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '11px',
-      fontStyle: 'bold',
-    }).setOrigin(0.5);
-
-    this.icon = new IconEntity<'icons' | 'parts'>(scene, 0, -2, this.getIconDefinition(slot));
-    this.icon.setDisplaySize(40, 40);
-
-    this.valueText = this.scene.add.text(0, 36, '', {
-      color: '#111111',
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '10px',
-      align: 'center',
-    }).setOrigin(0.5);
-
-    this.badgeText = this.scene.add.text(0, height / 2 - 14, '', {
+    this.titleText = this.scene.add.text(-width / 2 + 8, -height / 2 + 6, this.formatTitle(slot), {
       color: '#111111',
       fontFamily: 'Arial, sans-serif',
       fontSize: '9px',
       fontStyle: 'bold',
+    }).setOrigin(0, 0.5);
+
+    this.icon = new IconEntity<'icons' | 'parts'>(scene, -width / 2 + 18, 1, this.getIconDefinition(slot));
+    this.icon.setDisplaySize(16, 16);
+
+    this.valueText = this.scene.add.text(-width / 2 + 34, 0, '', {
+      color: '#111111',
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '8px',
+      lineSpacing: 2,
+    }).setOrigin(0, 0.5);
+
+    this.badgeText = this.scene.add.text(width / 2 - 8, height / 2 - 10, '', {
+      color: '#111111',
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '8px',
+      fontStyle: 'bold',
       backgroundColor: '#f2d27a',
-      padding: { left: 6, right: 6, top: 1, bottom: 1 },
-    }).setOrigin(0.5);
+      padding: { left: 5, right: 5, top: 1, bottom: 1 },
+    }).setOrigin(1, 1);
 
     this.add([this.background, this.border, this.titleText, this.icon, this.valueText, this.badgeText]);
     this.setSize(width, height);
@@ -63,14 +63,14 @@ export class CarSlotCardEntity extends GameObjects.Container {
     this.currentSlot = slot;
     this.titleText.setText(this.formatTitle(slot));
     this.icon.setIcon(this.getIconDefinition(slot));
-    this.icon.setDisplaySize(40, 40);
+    this.icon.setDisplaySize(16, 16);
 
     if (!slot.part) {
       this.valueText.setText('Empty');
       this.badgeText.setText('PLACE');
     } else {
       const condition = slot.isRepairing() ? 'Repairing' : `${slot.condition}%`;
-      this.valueText.setText([slot.part.name, this.formatStats(slot.part)].filter(Boolean).join('\n'));
+      this.valueText.setText([slot.part.name, this.formatStats(slot.part)].filter(Boolean).join(' '));
       this.badgeText.setText(condition);
     }
 

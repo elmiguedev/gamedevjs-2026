@@ -12,6 +12,9 @@ type WorkshopRow = {
 };
 
 export class ScrapScene extends Scene {
+  // entities
+  // ------------
+
   private resourceHud!: ResourceHud;
   private rows: WorkshopRow[] = [];
   private headerText?: GameObjects.Text;
@@ -23,9 +26,15 @@ export class ScrapScene extends Scene {
   private unsubscribeState?: () => void;
   private autoClaiming = false;
 
+  // constructor
+  // ----------------
+
   constructor() {
     super('ScrapScene');
   }
+
+  // core loop methods
+  // ----------------
 
   preload(): void {
   }
@@ -70,6 +79,9 @@ export class ScrapScene extends Scene {
       this.toast?.destroy();
     });
   }
+
+  // behavior methods
+  // ------------------
 
   private renderWorkshop(gameState: GameState): void {
     this.clearWorkshop();

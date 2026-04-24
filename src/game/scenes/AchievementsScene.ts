@@ -9,6 +9,9 @@ import { ResourceHud } from '@/game/huds/ResourceHud';
 import { ActionProvider } from '@/game/providers/ActionProvider';
 
 export class AchievementsScene extends Scene {
+  // entities
+  // ------------
+
   private resourceHud!: ResourceHud;
   private header?: AchievementHeaderEntity;
   private selector?: AchievementCategorySelectorEntity;
@@ -16,9 +19,15 @@ export class AchievementsScene extends Scene {
   private backButton?: ButtonEntity;
   private toast?: ToastEntity;
 
+  // constructor
+  // ----------------
+
   constructor() {
     super('AchievementsScene');
   }
+
+  // core loop methods
+  // ----------------
 
   create(): void {
     this.cameras.main.setBackgroundColor('#ffffff');
@@ -32,6 +41,9 @@ export class AchievementsScene extends Scene {
 
     new MenuEntity(this);
   }
+
+  // behavior methods
+  // ------------------
 
   private showSelector(): void {
     this.destroyCategoryView();

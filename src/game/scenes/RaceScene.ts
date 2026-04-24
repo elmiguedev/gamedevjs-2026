@@ -14,6 +14,9 @@ type RaceUiState =
   | { kind: 'result'; position: 1 | 2 | 3; reward: number; points: number };
 
 export class RaceScene extends Scene {
+  // entities
+  // ------------
+
   private resourceHud!: ResourceHud;
   private raceList?: RaceListEntity;
   private raceStatus?: RaceStatusEntity;
@@ -25,9 +28,15 @@ export class RaceScene extends Scene {
   private racesRendered = false;
   private uiState: RaceUiState = { kind: 'idle' };
 
+  // constructor
+  // ----------------
+
   constructor() {
     super('RaceScene');
   }
+
+  // core loop methods
+  // ----------------
 
   create(): void {
     this.cameras.main.setBackgroundColor('#ffffff');
@@ -102,6 +111,9 @@ export class RaceScene extends Scene {
 
     void this.refreshRaces();
   }
+
+  // behavior methods
+  // ------------------
 
   private async enterRace(raceId: string): Promise<void> {
     try {

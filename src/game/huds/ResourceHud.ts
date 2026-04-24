@@ -4,6 +4,9 @@ import { IconEntity } from '@/game/entities/IconEntity';
 import { ActionProvider } from '@/game/providers/ActionProvider';
 
 export class ResourceHud {
+  // entities
+  // ------------
+
   private readonly levelIcon: IconEntity<'icons'>;
   private readonly levelText: GameObjects.Text;
   private readonly levelXpText: GameObjects.Text;
@@ -19,6 +22,9 @@ export class ResourceHud {
 
   private unsubscribe?: () => void;
   private readonly progressTimer: Time.TimerEvent;
+
+  // constructor
+  // ----------------
 
   constructor(private readonly scene: Scene) {
     const y = 48;
@@ -73,6 +79,9 @@ export class ResourceHud {
 
     this.scene.events.once('shutdown', () => this.destroy());
   }
+
+  // behavior methods
+  // ------------------
 
   update(state: GameState): void {
     const mechanic = ActionProvider.getMechanicProgressRepository().get();

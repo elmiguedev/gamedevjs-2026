@@ -9,6 +9,9 @@ import type { GameState } from '@/core/domain/GameState';
 import type { CarPartInventoryItem } from '@/core/domain/CarPartInventory';
 
 export class InventoryScene extends Scene {
+  // entities
+  // ------------
+
   private resourceHud!: ResourceHud;
   private inventoryList?: InventoryListEntity;
   private unsubscribeInventory?: () => void;
@@ -17,9 +20,15 @@ export class InventoryScene extends Scene {
   private toast?: ToastEntity;
   private latestState?: GameState;
 
+  // constructor
+  // ----------------
+
   constructor() {
     super('InventoryScene');
   }
+
+  // core loop methods
+  // ----------------
 
   create(): void {
     this.cameras.main.setBackgroundColor('#ffffff');
@@ -62,6 +71,9 @@ export class InventoryScene extends Scene {
       this.toast?.destroy();
     });
   }
+
+  // behavior methods
+  // ------------------
 
   private async requestEquip(itemId: string): Promise<void> {
     const item = ActionProvider.getCarPartInventoryRepository().findById(itemId);

@@ -1,34 +1,22 @@
 import { Scene } from 'phaser';
+import { CarEntity } from '@/game/entities/CarEntity';
 import { CarPartDetailsEntity } from '@/game/entities/CarPartDetailsEntity';
-import { CarSlotCardEntity } from '@/game/entities/CarSlotCardEntity';
 import { MenuEntity } from '@/game/entities/MenuEntity';
 import { ResourceHud } from '@/game/huds/ResourceHud';
 import { ActionProvider } from '@/game/providers/ActionProvider';
-import { CAR_DRAFT_URL } from '@/game/assets/spritesheets';
 import type { GameState } from '@/core/domain/GameState';
 import type { CarSlot } from '@/core/domain/CarSlot';
 
-type SlotCard = {
-  slotId: string;
-  entity: CarSlotCardEntity;
-};
-
 export class CarScene extends Scene {
-
   // entities
-  // --------------------------------
+  // ------------
 
-  // hud con el gamestate
   private resourceHud?: ResourceHud;
-  private menu?: MenuEntity;
+  private carEntity?: CarEntity;
   private detailsEntity?: CarPartDetailsEntity;
-  private slotCards: SlotCard[] = [];
-  private carDraft?: Phaser.GameObjects.Image;
-  private titleText?: Phaser.GameObjects.Text;
-  private refreshTimer?: Phaser.Time.TimerEvent;
 
   // state
-  // --------------------------------
+  // --------------
 
   private currentState?: GameState;
   private initialized = false;
@@ -36,20 +24,40 @@ export class CarScene extends Scene {
   private unsubscribeState?: () => void;
 
   // constructor
-  // --------------------------------
+  // ----------------
 
   constructor() {
     super('CarScene');
   }
 
-  // creation methods
-  // --------------------------------
+  // core loop methods
+  // ----------------
 
   create(): void {
     this.createBackground();
-    this.createGameHud();
-    this.createMenuHud();
+    this.createHud();
+    this.createMenu();
+    this.createCar();
 
+    this.events.once('shutdown', () => this.destroyScene());
+  }
+
+  // creation methods
+  // ----------------
+
+  private createBackground(): void {
+    this.cameras.main.setBackgroundColor('#ffffff');
+  }
+
+  private createHud(): void {
+    this.resourceHud = new ResourceHud(this);
+  }
+
+  private createMenu(): void {
+    new MenuEntity(this);
+  }
+
+  private createCar(): void {
     this.unsubscribeState = ActionProvider.subscribeState((state) => {
       this.currentState = state;
       if (this.initialized) {
@@ -57,136 +65,72 @@ export class CarScene extends Scene {
       }
     });
 
-    // this.refreshTimer = this.time.addEvent({
-    //   delay: 1000,
-    //   loop: true,
-    //   callback: () => void this.pullState(),
-    // });
+    void ActionProvider.getState().then((state) => {
+      if (!this.sys.isActive()) {
+        return;
+      }
 
-    // void this.pullState();
-
-    this.events.once('shutdown', () => {
-      this.destroyScene();
+      this.currentState = state;
+      this.buildCar(state);
+      this.initialized = true;
     });
   }
 
-  private createBackground() {
-    this.cameras.main.setBackgroundColor('#ffffff');
-  }
+  // behavior methods
+  // ------------------
 
-  private createGameHud() {
-    this.resourceHud = new ResourceHud(this);
-  }
-
-  private createMenuHud() {
-    this.menu = new MenuEntity(this);
-  }
-
-  private destroyScene() {
-    this.unsubscribeState?.();
-    this.resourceHud?.destroy();
-    this.detailsEntity?.destroy();
-    this.slotCards.forEach((card) => card.entity.destroy());
-    this.titleText?.destroy();
-    this.carDraft?.destroy();
-  }
-
-  private async pullState(): Promise<void> {
-    const state = await ActionProvider.getState();
-
-    if (!this.sys.isActive()) {
-      return;
-    }
-
-    this.currentState = state;
-
-    if (!this.initialized) {
-      this.buildScene(state);
-      this.initialized = true;
-      return;
-    }
-
-    this.refreshScene();
-  }
-
-  private buildScene(state: GameState): void {
+  private buildCar(state: GameState): void {
     this.addTitle();
-    this.addCarDraft();
-    this.addSlotCards(state);
-    this.addDetails(state);
+
+    this.carEntity = new CarEntity(this, 240, 252, state.car, {
+      selectedSlotId: this.selectedSlotId,
+      onSelectSlot: (slot) => {
+        this.selectedSlotId = slot.id;
+        this.refreshScene();
+      },
+    });
+
+    this.detailsEntity = new CarPartDetailsEntity(
+      this,
+      240,
+      418,
+      this.findSlotById(state, this.selectedSlotId) ?? state.car.slots.engine,
+      (slotId) => {
+        void ActionProvider.repairCarSlot(slotId).then((updatedState) => {
+          this.currentState = updatedState;
+          this.refreshScene();
+        });
+      },
+    );
+
     this.refreshScene();
   }
 
   private addTitle(): void {
-    this.titleText = this.add.text(34, 108, 'GARAGE', {
+    this.add.text(22, 102, 'GARAGE', {
       color: '#111111',
       fontFamily: 'Arial, sans-serif',
-      fontSize: '38px',
+      fontSize: '34px',
       fontStyle: 'bold',
     });
   }
 
-  private addCarDraft(): void {
-    this.carDraft = this.add.image(360, 468, 'car-draft');
-    this.carDraft.setOrigin(0.5);
-    this.carDraft.setDisplaySize(430, 254);
-  }
-
-  private addSlotCards(state: GameState): void {
-    const slots: Array<{ slot: CarSlot; x: number; y: number; width: number; height: number }> = [
-      { slot: state.car.slots.steering, x: 122, y: 312, width: 82, height: 92 },
-      { slot: state.car.slots.engine, x: 360, y: 300, width: 82, height: 92 },
-      { slot: state.car.slots.nitro, x: 598, y: 312, width: 82, height: 92 },
-      { slot: state.car.slots.wheels.frontLeft, x: 112, y: 532, width: 76, height: 88 },
-      { slot: state.car.slots.wheels.frontRight, x: 608, y: 532, width: 76, height: 88 },
-      { slot: state.car.slots.wheels.rearLeft, x: 112, y: 676, width: 76, height: 88 },
-      { slot: state.car.slots.wheels.rearRight, x: 608, y: 676, width: 76, height: 88 },
-      { slot: state.car.slots.chassis, x: 258, y: 742, width: 82, height: 92 },
-      { slot: state.car.slots.spoiler, x: 462, y: 742, width: 82, height: 92 },
-    ];
-
-    this.slotCards = slots.map(({ slot, x, y, width, height }) => ({
-      slotId: slot.id,
-      entity: new CarSlotCardEntity(this, x, y, width, height, slot, (selectedSlot) => {
-        this.selectedSlotId = selectedSlot.id;
-        this.refreshScene();
-      }),
-    }));
-
-    this.slotCards.forEach(({ entity }) => entity.setDepth(5));
-  }
-
-  private addDetails(state: GameState): void {
-    this.detailsEntity = new CarPartDetailsEntity(
-      this,
-      360,
-      980,
-      this.findSlotById(state, this.selectedSlotId) ?? state.car.slots.engine,
-      (slotId) => void ActionProvider.repairCarSlot(slotId).then((updatedState) => {
-        this.currentState = updatedState;
-        this.refreshScene();
-      }),
-    );
-  }
-
   private refreshScene(): void {
-    if (!this.currentState) {
+    if (!this.currentState || !this.carEntity) {
       return;
     }
 
-    const state = this.currentState;
+    this.carEntity.refresh(this.currentState.car, this.selectedSlotId);
 
-    this.slotCards.forEach(({ slotId, entity }) => {
-      const slot = this.findSlotById(state, slotId);
-      if (!slot) {
-        return;
-      }
-
-      entity.refresh(slot, slot.id === this.selectedSlotId);
-    });
-
-    const selectedSlot = this.findSlotById(state, this.selectedSlotId) ?? state.car.slots.engine;
+    const selectedSlot = this.findSlotById(this.currentState, this.selectedSlotId) ?? this.currentState.car.slots.engine;
     this.detailsEntity?.update(selectedSlot);
+  }
+
+  private destroyScene(): void {
+    this.unsubscribeState?.();
+    this.resourceHud?.destroy();
+    this.carEntity?.destroy();
+    this.detailsEntity?.destroy();
   }
 
   private findSlotById(state: GameState, slotId: string): CarSlot | null {

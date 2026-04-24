@@ -2,9 +2,15 @@ import { Scene } from 'phaser';
 import { CAR_DRAFT_URL, SPRITESHEET_FRAME_SIZE, SPRITESHEET_KEYS, SPRITESHEET_URLS } from '@/game/assets/spritesheets';
 
 export class BootloaderScene extends Scene {
+  // constructor
+  // ----------------
+
   constructor() {
     super('BootloaderScene');
   }
+
+  // core loop methods
+  // ----------------
 
   preload(): void {
     this.cameras.main.setBackgroundColor('#ffffff');
