@@ -76,11 +76,19 @@ export class CarScene extends Scene {
     });
   }
 
+  private createTitle(): void {
+    this.add.text(22, 102, 'GARAGE', {
+      color: '#111111',
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '34px',
+      fontStyle: 'bold',
+    });
+  }
+
   // behavior methods
   // ------------------
 
   private buildCar(state: GameState): void {
-    this.addTitle();
 
     this.carEntity = new CarEntity(this, 240, 252, state.car, {
       selectedSlotId: this.selectedSlotId,
@@ -106,14 +114,7 @@ export class CarScene extends Scene {
     this.refreshScene();
   }
 
-  private addTitle(): void {
-    this.add.text(22, 102, 'GARAGE', {
-      color: '#111111',
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '34px',
-      fontStyle: 'bold',
-    });
-  }
+
 
   private refreshScene(): void {
     if (!this.currentState || !this.carEntity) {
