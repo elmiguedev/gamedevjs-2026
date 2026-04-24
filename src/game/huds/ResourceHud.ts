@@ -29,44 +29,44 @@ export class ResourceHud {
   constructor(private readonly scene: Scene) {
     const y = 48;
 
-    this.levelIcon = new IconEntity(this.scene, 34, y, { sheet: 'icons', icon: 'mechanicLevel' });
-    this.levelIcon.setDisplaySize(20, 20);
-    this.levelText = this.scene.add.text(56, y - 8, 'LV 0', {
+    this.levelIcon = new IconEntity(this.scene, 24, y, { sheet: 'icons', icon: 'mechanicLevel' });
+    this.levelIcon.setDisplaySize(18, 18);
+    this.levelText = this.scene.add.text(44, y - 8, 'LV 0', {
       color: '#111111',
       fontFamily: 'Arial, sans-serif',
-      fontSize: '18px',
+      fontSize: '15px',
       fontStyle: 'bold',
     }).setOrigin(0, 0.5);
-    this.levelXpText = this.scene.add.text(56, y + 12, '0 / 0 XP', {
+    this.levelXpText = this.scene.add.text(44, y + 10, '0 / 0 XP', {
       color: '#444444',
       fontFamily: 'Arial, sans-serif',
-      fontSize: '11px',
+      fontSize: '10px',
     }).setOrigin(0, 0.5);
 
-    this.scrapIcon = new IconEntity(this.scene, 250, y, { sheet: 'icons', icon: 'scrap' });
-    this.scrapIcon.setDisplaySize(20, 20);
-    this.scrapText = this.scene.add.text(270, y, '0', {
+    this.scrapIcon = new IconEntity(this.scene, 152, y, { sheet: 'icons', icon: 'scrap' });
+    this.scrapIcon.setDisplaySize(18, 18);
+    this.scrapText = this.scene.add.text(172, y, '0', {
       color: '#111111',
       fontFamily: 'Arial, sans-serif',
-      fontSize: '18px',
+      fontSize: '15px',
       fontStyle: 'bold',
     }).setOrigin(0, 0.5);
 
-    this.cashIcon = new IconEntity(this.scene, 390, y, { sheet: 'icons', icon: 'cash' });
-    this.cashIcon.setDisplaySize(20, 20);
-    this.cashText = this.scene.add.text(410, y, '0', {
+    this.cashIcon = new IconEntity(this.scene, 270, y, { sheet: 'icons', icon: 'cash' });
+    this.cashIcon.setDisplaySize(18, 18);
+    this.cashText = this.scene.add.text(290, y, '0', {
       color: '#111111',
       fontFamily: 'Arial, sans-serif',
-      fontSize: '18px',
+      fontSize: '15px',
       fontStyle: 'bold',
     }).setOrigin(0, 0.5);
 
-    this.fuelIcon = new IconEntity(this.scene, 530, y, { sheet: 'icons', icon: 'fuel' });
-    this.fuelIcon.setDisplaySize(20, 20);
-    this.fuelText = this.scene.add.text(550, y, '0 / 0', {
+    this.fuelIcon = new IconEntity(this.scene, 382, y, { sheet: 'icons', icon: 'fuel' });
+    this.fuelIcon.setDisplaySize(18, 18);
+    this.fuelText = this.scene.add.text(402, y, '0 / 0', {
       color: '#111111',
       fontFamily: 'Arial, sans-serif',
-      fontSize: '18px',
+      fontSize: '15px',
       fontStyle: 'bold',
     }).setOrigin(0, 0.5);
 

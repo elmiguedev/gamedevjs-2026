@@ -15,8 +15,8 @@ export class MenuEntity {
 
   private items: MenuItem[] = [
     { key: 'CarScene', icon: 'garageCar', targetScene: 'CarScene' },
-    { key: 'ScrapScene', icon: 'scrapYardCrafting', targetScene: 'ScrapScene' },
-    { key: 'InventoryScene', icon: 'inventory', targetScene: 'InventoryScene' },
+    { key: 'ScrapScene', icon: 'collectScrap', targetScene: 'ScrapScene' },
+    { key: 'InventoryScene', icon: 'craft', targetScene: 'InventoryScene' },
     { key: 'RaceScene', icon: 'raceFlag', targetScene: 'RaceScene' },
     { key: 'AchievementsScene', icon: 'star', targetScene: 'AchievementsScene' },
   ];
