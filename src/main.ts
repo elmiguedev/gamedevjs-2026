@@ -12,7 +12,7 @@ export default new Game({
   transparent: false,
   clearBeforeRender: true,
   width: 480,
-  height: 584,
+  height: 700,
   scale: {
     autoCenter: AUTO,
   },
