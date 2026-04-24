@@ -46,10 +46,7 @@ export class CarEquipmentEntity extends GameObjects.Container {
   private formatCar(car: Car): string {
     const slots = [
       car.slots.chassis,
-      car.slots.wheels.frontLeft,
-      car.slots.wheels.frontRight,
-      car.slots.wheels.rearLeft,
-      car.slots.wheels.rearRight,
+      car.slots.wheels,
       car.slots.engine,
       car.slots.steering,
       car.slots.nitro,

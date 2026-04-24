@@ -11,12 +11,7 @@ export interface CarAttributes {
 
 export interface CarSlots {
   chassis: CarSlot;
-  wheels: {
-    frontLeft: CarSlot;
-    frontRight: CarSlot;
-    rearLeft: CarSlot;
-    rearRight: CarSlot;
-  };
+  wheels: CarSlot;
   engine: CarSlot;
   steering: CarSlot;
   nitro: CarSlot;
@@ -40,12 +35,7 @@ export class Car {
   static createInitial(chassisPart: CarPart): Car {
     return new Car({
       chassis: new CarSlot('chassis', 'chasis', chassisPart, null),
-      wheels: {
-        frontLeft: new CarSlot('frontLeft', 'rueda'),
-        frontRight: new CarSlot('frontRight', 'rueda'),
-        rearLeft: new CarSlot('rearLeft', 'rueda'),
-        rearRight: new CarSlot('rearRight', 'rueda'),
-      },
+      wheels: new CarSlot('wheels', 'rueda'),
       engine: new CarSlot('engine', 'motor'),
       steering: new CarSlot('steering', 'direccion'),
       nitro: new CarSlot('nitro', 'nitro'),
@@ -73,10 +63,7 @@ export class Car {
   hasCompleteCar(): boolean {
     return [
       this.slots.chassis,
-      this.slots.wheels.frontLeft,
-      this.slots.wheels.frontRight,
-      this.slots.wheels.rearLeft,
-      this.slots.wheels.rearRight,
+      this.slots.wheels,
       this.slots.engine,
       this.slots.steering,
       this.slots.nitro,
@@ -107,14 +94,6 @@ export class Car {
   applyRaceDamage(amounts: Partial<Record<CarPartType, number>>): void {
     for (const [key, value] of Object.entries(amounts)) {
       if (typeof value !== 'number') {
-        continue;
-      }
-
-      if (key === 'rueda') {
-        this.slots.wheels.frontLeft.applyDamage(value);
-        this.slots.wheels.frontRight.applyDamage(value);
-        this.slots.wheels.rearLeft.applyDamage(value);
-        this.slots.wheels.rearRight.applyDamage(value);
         continue;
       }
 
@@ -162,13 +141,7 @@ export class Car {
 
   private findSlotForPart(type: CarPartType): CarSlot | null {
     if (type === 'rueda') {
-      return (
-        this.slots.wheels.frontLeft.part === null ? this.slots.wheels.frontLeft :
-        this.slots.wheels.frontRight.part === null ? this.slots.wheels.frontRight :
-        this.slots.wheels.rearLeft.part === null ? this.slots.wheels.rearLeft :
-        this.slots.wheels.rearRight.part === null ? this.slots.wheels.rearRight :
-        this.slots.wheels.frontLeft
-      );
+      return this.slots.wheels;
     }
 
     const lookup: Record<Exclude<CarPartType, 'rueda'>, CarSlot> = {
@@ -185,10 +158,7 @@ export class Car {
   private listSlots(): CarSlot[] {
     return [
       this.slots.chassis,
-      this.slots.wheels.frontLeft,
-      this.slots.wheels.frontRight,
-      this.slots.wheels.rearLeft,
-      this.slots.wheels.rearRight,
+      this.slots.wheels,
       this.slots.engine,
       this.slots.steering,
       this.slots.nitro,

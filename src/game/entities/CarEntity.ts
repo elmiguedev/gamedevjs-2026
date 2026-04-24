@@ -61,7 +61,7 @@ export class CarEntity extends GameObjects.Container {
     this.createSlot(baseX, baseY + stepY * 2, this.car.slots.steering);
     this.createSlot(baseX, baseY + stepY * 3, this.car.slots.nitro);
     this.createSlot(baseX, baseY + stepY * 4, this.car.slots.spoiler);
-    this.createSlot(baseX, baseY + stepY * 5, this.car.slots.wheels.frontLeft);
+    this.createSlot(baseX, baseY + stepY * 5, this.car.slots.wheels);
   }
 
   createSlot(x: number, y: number, slot: CarSlot) {
@@ -97,10 +97,7 @@ export class CarEntity extends GameObjects.Container {
   private findSlot(car: Car, slotId: string): CarSlot | null {
     const slots = [
       car.slots.chassis,
-      car.slots.wheels.frontLeft,
-      car.slots.wheels.frontRight,
-      car.slots.wheels.rearLeft,
-      car.slots.wheels.rearRight,
+      car.slots.wheels,
       car.slots.engine,
       car.slots.steering,
       car.slots.nitro,

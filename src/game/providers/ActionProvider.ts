@@ -88,22 +88,14 @@ export class ActionProvider {
       throw new Error('Missing base race parts');
     }
 
-    const wheelItems = [
-      this.carPartInventoryRepository.add(baseWheel),
-      this.carPartInventoryRepository.add(baseWheel),
-      this.carPartInventoryRepository.add(baseWheel),
-      this.carPartInventoryRepository.add(baseWheel),
-    ];
-
+    const wheelItem = this.carPartInventoryRepository.add(baseWheel);
     const motorItem = this.carPartInventoryRepository.add(baseMotor);
     const directionItem = this.carPartInventoryRepository.add(baseDirection);
     const nitroItem = this.carPartInventoryRepository.add(baseNitro);
     const spoilerItem = this.carPartInventoryRepository.add(baseSpoiler);
 
-    wheelItems.forEach((item) => {
-      this.carPartInventoryRepository.setEquipped(item.id, true);
-      this.gameStateService.getState().car.equipItem(item);
-    });
+    this.carPartInventoryRepository.setEquipped(wheelItem.id, true);
+    this.gameStateService.getState().car.equipItem(wheelItem);
     this.carPartInventoryRepository.setEquipped(motorItem.id, true);
     this.gameStateService.getState().car.equipItem(motorItem);
     this.carPartInventoryRepository.setEquipped(directionItem.id, true);

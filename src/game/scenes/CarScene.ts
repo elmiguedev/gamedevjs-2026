@@ -137,10 +137,7 @@ export class CarScene extends Scene {
   private findSlotById(state: GameState, slotId: string): CarSlot | null {
     const slots = [
       state.car.slots.chassis,
-      state.car.slots.wheels.frontLeft,
-      state.car.slots.wheels.frontRight,
-      state.car.slots.wheels.rearLeft,
-      state.car.slots.wheels.rearRight,
+      state.car.slots.wheels,
       state.car.slots.engine,
       state.car.slots.steering,
       state.car.slots.nitro,
