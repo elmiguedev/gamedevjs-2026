@@ -5,6 +5,7 @@ import type { UiIconName } from '@/game/assets/spritesheets';
 type MenuItem = {
   key: string;
   icon: UiIconName;
+  label: string;
   targetScene: string;
 };
 
@@ -14,11 +15,11 @@ export class MenuEntity {
   // -----------------------
 
   private items: MenuItem[] = [
-    { key: 'CarScene', icon: 'garageCar', targetScene: 'CarScene' },
-    { key: 'ScrapScene', icon: 'collectScrap', targetScene: 'ScrapScene' },
-    { key: 'InventoryScene', icon: 'craft', targetScene: 'InventoryScene' },
-    { key: 'RaceScene', icon: 'raceFlag', targetScene: 'RaceScene' },
-    { key: 'AchievementsScene', icon: 'star', targetScene: 'AchievementsScene' },
+    { key: 'CarScene', icon: 'garageCar', label: 'My Car', targetScene: 'CarScene' },
+    { key: 'ScrapScene', icon: 'collectScrap', label: 'Scrapyard', targetScene: 'ScrapScene' },
+    { key: 'InventoryScene', icon: 'craft', label: 'Workshop', targetScene: 'InventoryScene' },
+    { key: 'RaceScene', icon: 'raceFlag', label: 'Races', targetScene: 'RaceScene' },
+    { key: 'AchievementsScene', icon: 'star', label: 'Awards', targetScene: 'AchievementsScene' },
   ];
   private currentScene?: string;
 
@@ -35,9 +36,11 @@ export class MenuEntity {
 
   create(): void {
     const height = this.scene.game.canvas.height;
-    const containerY = height - 58;
-    const baseX = 80;
-    const stepX = 80;
+    const containerY = height - 60;
+    const baseX = 70;
+    const stepX = 85;
+
+    this.createDivider();
 
     this.createMenuItem(this.items[0], baseX + 0 * stepX, containerY);
     this.createMenuItem(this.items[1], baseX + 1 * stepX, containerY);
@@ -47,8 +50,25 @@ export class MenuEntity {
 
   }
 
-  // behavior methods
+  // creation methods
   // ------------------
+
+  private createDivider() {
+    const lineColor = 0x999999;
+    const x = 40;
+    const y = 600;
+    const width = 400;
+
+    const line = this.scene.add.rectangle(
+      x,
+      y,
+      width,
+      1,
+      lineColor,
+    );
+
+    line.setOrigin(0, 0.5);
+  }
 
   private createMenuItem(item: MenuItem, x: number, y: number): void {
     const radius = 26;
@@ -60,10 +80,18 @@ export class MenuEntity {
       .setStrokeStyle(2, strokeColor);
 
     const icon = new IconEntity(this.scene, x, y, { sheet: 'icons', icon: item.icon });
-    icon.setDisplaySize(20, 20);
+    icon.setDisplaySize(40, 40);
+
+    const label = this.scene.add.text(x, y + 39, item.label, {
+      color: '#111111',
+      fontFamily: 'Barlow Condensed, Arial, sans-serif',
+      fontSize: '16px',
+      fontStyle: active ? 'bold' : 'normal',
+    }).setOrigin(0.5);
 
     circle.setDepth(depth);
     icon.setDepth(depth + 1);
+    label.setDepth(depth + 1);
 
     circle.setInteractive({ useHandCursor: true });
     circle.on('pointerdown', () => {

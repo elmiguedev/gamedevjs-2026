@@ -16,6 +16,11 @@ export default new Game({
   scale: {
     autoCenter: AUTO,
   },
+  render: {
+    pixelArt: true,
+    antialias: false,
+    antialiasGL: false
+  },
   scene: [
     BootloaderScene,
     ScrapScene,
