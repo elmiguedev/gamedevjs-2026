@@ -10,7 +10,6 @@ export class PaginationEntity extends GameObjects.Container {
   private readonly nextCircle: GameObjects.Arc;
   private readonly prevText: GameObjects.Text;
   private readonly nextText: GameObjects.Text;
-  private pageDots: GameObjects.Container[] = [];
 
   constructor(
     scene: Scene,
@@ -57,37 +56,7 @@ export class PaginationEntity extends GameObjects.Container {
   }
 
   setPage(currentPage: number, totalPages: number): void {
-    this.pageDots.forEach((dot) => dot.destroy());
-    this.pageDots = [];
-
-    if (!this.onPage) {
-      this.pageText.setText(`${currentPage + 1}/${totalPages}`);
-    } else {
-      this.pageText.setText('');
-      const visiblePages = Math.min(totalPages, 5);
-      const startPage = Math.min(Math.max(0, currentPage - 2), Math.max(0, totalPages - visiblePages));
-
-      for (let index = 0; index < visiblePages; index += 1) {
-        const page = startPage + index;
-        const dot = this.scene.add.container(-42 + index * 21, 0);
-        if (page === currentPage) {
-          dot.add(this.scene.add.circle(0, 0, 13, 0xf2d27a));
-        }
-
-        const text = this.scene.add.text(0, -1, String(page + 1), {
-          color: page === currentPage ? '#111111' : '#444444',
-          fontFamily: FONT_FAMILY,
-          fontSize: '14px',
-          fontStyle: 'bold',
-        }).setOrigin(0.5);
-        dot.add(text);
-        dot.setSize(26, 26);
-        dot.setInteractive({ useHandCursor: true });
-        dot.on('pointerdown', () => this.onPage?.(page));
-        this.pageDots.push(dot);
-        this.add(dot);
-      }
-    }
+    this.pageText.setText(`${currentPage + 1}/${totalPages}`);
 
     this.setArrowDisabled(this.prevCircle, this.prevText, currentPage <= 0);
     this.setArrowDisabled(this.nextCircle, this.nextText, currentPage >= totalPages - 1);
@@ -102,6 +71,5 @@ export class PaginationEntity extends GameObjects.Container {
     this.prevButton.destroy();
     this.nextButton.destroy();
     this.pageText.destroy();
-    this.pageDots.forEach((dot) => dot.destroy());
   }
 }
