@@ -26,19 +26,19 @@ class GarageActionButtonEntity extends GameObjects.Container {
     super(scene, x, y);
 
     this.background = this.scene.add.rectangle(0, 0, width, height, 0x111111).setOrigin(0);
-    const iconEntity = new IconEntity(this.scene, 28, height / 2, { sheet: 'icons', icon });
-    iconEntity.setDisplaySize(30, 30);
+    const iconEntity = new IconEntity(this.scene, 24, height / 2, { sheet: 'icons', icon });
+    iconEntity.setDisplaySize(26, 26);
     iconEntity.setTint(0xffffff);
-    this.titleText = this.scene.add.text(54, 18, title, {
-      color: '#ffffff',
-      fontFamily: FONT_FAMILY,
-      fontSize: '16px',
-      fontStyle: 'bold',
-    }).setOrigin(0, 0.5);
-    this.detailText = this.scene.add.text(54, 40, detail, {
+    this.titleText = this.scene.add.text(48, 14, title, {
       color: '#ffffff',
       fontFamily: FONT_FAMILY,
       fontSize: '13px',
+      fontStyle: 'bold',
+    }).setOrigin(0, 0.5);
+    this.detailText = this.scene.add.text(48, 30, detail, {
+      color: '#ffffff',
+      fontFamily: FONT_FAMILY,
+      fontSize: '11px',
       fontStyle: 'bold',
     }).setOrigin(0, 0.5);
 

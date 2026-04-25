@@ -27,18 +27,18 @@ export class CarOverviewEntity extends GameObjects.Container {
   }
 
   private createDraft(): void {
-    this.draft = this.scene.add.image(240, 90, 'car-draft');
-    this.draft.setDisplaySize(170, 255);
+    this.draft = this.scene.add.image(240, 109, 'car-draft');
+    this.draft.setDisplaySize(170, 215);
     this.add(this.draft);
   }
 
   private createSlots(): void {
-    this.createSlotView(this.car.slots.engine, 28, 92, 150, 116);
+    this.createSlotView(this.car.slots.engine, 28, 104, 150, 116);
     this.createSlotView(this.car.slots.steering, 28, 42, 150, 74);
-    this.createSlotView(this.car.slots.wheels, 338, 42, 292, 74);
-    this.createSlotView(this.car.slots.nitro, 338, 120, 292, 126);
-    this.createSlotView(this.car.slots.spoiler, 338, 218, 292, 236);
-    this.createSlotView(this.car.slots.chassis, 28, 190, 150, 190);
+    this.createSlotView(this.car.slots.wheels, 338, 32, 292, 64);
+    this.createSlotView(this.car.slots.nitro, 338, 110, 292, 116);
+    this.createSlotView(this.car.slots.spoiler, 338, 182, 292, 214);
+    this.createSlotView(this.car.slots.chassis, 28, 168, 150, 184);
   }
 
   private createSlotView(slot: CarSlot, x: number, y: number, lineEndX: number, lineEndY: number): void {

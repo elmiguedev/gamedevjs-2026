@@ -96,7 +96,7 @@ export class CarScene extends Scene {
   // ------------------
 
   private buildCar(state: GameState): void {
-    this.carOverview = new CarOverviewEntity(this, 0, 132, state.car);
+    this.carOverview = new CarOverviewEntity(this, 0, 124, state.car);
     this.statsPanel = new CarStatsPanelEntity(this, 20, 360, 440, 86, state.car.attributes);
     this.vitalsPanel = new CarVitalsPanelEntity(this, 20, 458, 440, 78, state.car);
     this.actionsPanel = new CarActionsPanelEntity(
