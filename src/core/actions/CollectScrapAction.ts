@@ -19,11 +19,19 @@ export class CollectScrapAction implements Action<void, GameState> {
 
       return {
         ...current,
-        scrapCollectAvailableAt: now + DEFAULT_COLLECT_SCRAP_COOLDOWN_SECONDS * 1000,
+        scrapCollectAvailableAt: now + this.getCollectCooldownSeconds(current) * 1000,
       };
     });
 
     this.achievementChecker.check();
     return state;
+  }
+
+  private getCollectCooldownSeconds(state: GameState): number {
+    if (state.craftedToolIds.includes('iman-poderoso')) {
+      return 1;
+    }
+
+    return DEFAULT_COLLECT_SCRAP_COOLDOWN_SECONDS;
   }
 }

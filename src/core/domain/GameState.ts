@@ -6,6 +6,8 @@ export interface GameState {
   scrapCollectAvailableAt: number;
   cash: number;
   fuel: number;
+  craftedToolIds: string[];
+  robotScrapCollectedAt: number;
   racePoints: number;
   partsCrafted: number;
   craftedWheelParts: number;

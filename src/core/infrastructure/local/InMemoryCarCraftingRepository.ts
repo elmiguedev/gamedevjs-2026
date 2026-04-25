@@ -1,10 +1,10 @@
 import type { CarCraftJob } from '@/core/domain/CarCrafting';
 import type { CarCraftingRepository, CraftingStatus } from '@/core/domain/CarCraftingRepository';
-import type { CarPart } from '@/core/domain/CarPart';
+import type { CraftableItem } from '@/core/domain/CarCrafting';
 
 export class InMemoryCarCraftingRepository implements CarCraftingRepository {
   private active: CarCraftJob | null = null;
-  private ready: CarPart | null = null;
+  private ready: CraftableItem | null = null;
 
   getStatus(now: number = Date.now()): CraftingStatus {
     this.sync(now);
@@ -15,7 +15,7 @@ export class InMemoryCarCraftingRepository implements CarCraftingRepository {
     };
   }
 
-  start(part: CarPart, now: number = Date.now()): CarCraftJob {
+  start(part: CraftableItem, now: number = Date.now()): CarCraftJob {
     if (this.active || this.ready) {
       throw new Error('Crafting already in progress');
     }
@@ -29,7 +29,7 @@ export class InMemoryCarCraftingRepository implements CarCraftingRepository {
     return this.active;
   }
 
-  claimReady(now: number = Date.now()): CarPart | null {
+  claimReady(now: number = Date.now()): CraftableItem | null {
     this.sync(now);
 
     if (!this.ready) {

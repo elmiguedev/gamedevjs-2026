@@ -14,6 +14,8 @@ import type { GameState } from '@/core/domain/GameState';
 import type { CarPartInventoryItem } from '@/core/domain/CarPartInventory';
 import type { CarPart } from '@/core/domain/CarPart';
 import type { CraftingStatus } from '@/core/domain/CarCraftingRepository';
+import { isWorkshopTool, type CraftableItem } from '@/core/domain/CarCrafting';
+import type { WorkshopTool } from '@/core/domain/WorkshopTool';
 
 type WorkshopTab = 'craft' | 'inventory';
 
@@ -146,10 +148,11 @@ export class InventoryScene extends Scene {
     this.contentObjects.push(title);
 
     const parts = ActionProvider.getCarPartRepository().findAll();
+    const tools = ActionProvider.getWorkshopToolRepository().findAll();
     const progress = ActionProvider.getMechanicProgressRepository().get();
     const craftingStatus = ActionProvider.getCraftingStatus();
     const craftBusy = craftingStatus.active !== null || craftingStatus.ready !== null;
-    const availableParts = parts
+    const availableParts = [...parts, ...tools]
       .filter((part) => progress.level >= part.requiredLevel);
 
     const maxPage = this.getMaxPage(availableParts.length);
@@ -166,7 +169,8 @@ export class InventoryScene extends Scene {
     let y = LIST_Y + 42;
     pageParts.forEach((part) => {
       const canCraft = part.scrapCost <= state.scrap && part.cashCost <= state.cash;
-      const row = this.createCraftRow(y, part, craftBusy || !canCraft, craftingStatus);
+      const alreadyOwned = isWorkshopTool(part) && state.craftedToolIds.includes(part.id);
+      const row = this.createCraftRow(y, part, craftBusy || !canCraft || alreadyOwned, craftingStatus, alreadyOwned);
       this.craftRows.push(row);
       this.contentObjects.push(row.container);
       y += 48;
@@ -190,12 +194,12 @@ export class InventoryScene extends Scene {
     this.handleReadyCraft(craftingStatus);
   }
 
-  private createCraftRow(y: number, part: CarPart, disabled: boolean, craftingStatus: CraftingStatus): WorkshopRow {
+  private createCraftRow(y: number, part: CraftableItem, disabled: boolean, craftingStatus: CraftingStatus, alreadyOwned = false): WorkshopRow {
     const row = this.add.container(CONTENT_X + 18, y);
     const panel = this.add.rectangle(0, 0, CONTENT_WIDTH - 16, 42, 0xffffff).setOrigin(0, 0.5);
     panel.setStrokeStyle(1, 0xcccccc);
 
-    const icon = new IconEntity(this, 22, 0, this.getPartIcon(part));
+    const icon = new IconEntity(this, 22, 0, this.getCraftIcon(part));
     icon.setDisplaySize(26, 26);
 
     const name = this.add.text(46, -8, part.name, {
@@ -204,7 +208,7 @@ export class InventoryScene extends Scene {
       fontSize: '14px',
       fontStyle: 'bold',
     }).setOrigin(0, 0.5);
-    const cost = this.add.text(46, 10, `Scrap ${part.scrapCost} | Cash ${part.cashCost} | ${part.craftTimeSeconds}s`, {
+    const cost = this.add.text(46, 10, alreadyOwned ? 'MEJORA ACTIVA' : `Scrap ${part.scrapCost} | Cash ${part.cashCost} | ${part.craftTimeSeconds}s`, {
       color: '#444444',
       fontFamily: 'Barlow Condensed, Arial, sans-serif',
       fontSize: '12px',
@@ -212,7 +216,7 @@ export class InventoryScene extends Scene {
 
     const active = craftingStatus.active?.part.id === part.id ? craftingStatus.active : null;
     const ready = craftingStatus.ready?.id === part.id;
-    const craftButton = new ButtonEntity(this, 330, 0, 68, 28, this.getCraftActionLabel(part, craftingStatus), () => {
+    const craftButton = new ButtonEntity(this, 330, 0, 68, 28, alreadyOwned ? 'Activa' : this.getCraftActionLabel(part, craftingStatus), () => {
       void ActionProvider.craftCarPart(part.id)
         .then(() => this.renderActiveTab())
         .catch(() => this.renderActiveTab());
@@ -237,7 +241,7 @@ export class InventoryScene extends Scene {
     return { container: row, craftButton };
   }
 
-  private getCraftActionLabel(part: CarPart, status: CraftingStatus): string {
+  private getCraftActionLabel(part: CraftableItem, status: CraftingStatus): string {
     if (status.active?.part.id === part.id) {
       return '...';
     }
@@ -381,6 +385,26 @@ export class InventoryScene extends Scene {
 
   private requestEquip(itemId: string): void {
     void ActionProvider.equipCarPart(itemId);
+  }
+
+  private getCraftIcon(item: CraftableItem): { sheet: 'icons'; icon: UiIconName } | { sheet: 'parts'; icon: PartsIconName } {
+    if (isWorkshopTool(item)) {
+      return { sheet: 'icons', icon: this.getToolIcon(item) };
+    }
+
+    return this.getPartIcon(item);
+  }
+
+  private getToolIcon(tool: WorkshopTool): UiIconName {
+    if (tool.id === 'brazo-mecanico') {
+      return 'repair';
+    }
+
+    if (tool.id === 'iman-poderoso') {
+      return 'collectScrap';
+    }
+
+    return 'scrapYardCrafting';
   }
 
   private getPartIcon(part: CarPart): { sheet: 'icons'; icon: UiIconName } | { sheet: 'parts'; icon: PartsIconName } {

@@ -1,17 +1,19 @@
 import type { Action } from '../domain/Action';
 import type { AchievementChecker } from '../domain/AchievementChecker';
-import type { CarPart } from '../domain/CarPart';
 import type { GameState } from '../domain/GameState';
 import type { GameStateService } from '../domain/GameStateService';
 import type { CarPartRepository } from '../domain/CarPartRepository';
 import type { CarPartInventoryRepository } from '../domain/CarPartInventoryRepository';
 import type { MechanicProgressRepository } from '../domain/MechanicProgressRepository';
 import type { CarCraftingRepository, CraftingStatus } from '../domain/CarCraftingRepository';
+import type { WorkshopToolRepository } from '../domain/WorkshopToolRepository';
+import { isWorkshopTool, type CraftableItem } from '../domain/CarCrafting';
 
 export class CraftCarPartAction implements Action<{ partId: string }, CraftingStatus> {
   constructor(
     private readonly gameStateService: GameStateService,
     private readonly carPartRepository: CarPartRepository,
+    private readonly workshopToolRepository: WorkshopToolRepository,
     private readonly mechanicProgressRepository: MechanicProgressRepository,
     private readonly carPartInventoryRepository: CarPartInventoryRepository,
     private readonly carCraftingRepository: CarCraftingRepository,
@@ -25,7 +27,7 @@ export class CraftCarPartAction implements Action<{ partId: string }, CraftingSt
       throw new Error('Craft already active');
     }
 
-    const part = this.carPartRepository.findById(input.partId);
+    const part = this.findCraftable(input.partId);
 
     if (!part) {
       throw new Error('Part not found');
@@ -54,5 +56,19 @@ export class CraftCarPartAction implements Action<{ partId: string }, CraftingSt
     this.achievementChecker.check();
 
     return this.carCraftingRepository.getStatus();
+  }
+
+  private findCraftable(id: string): CraftableItem | undefined {
+    const part = this.carPartRepository.findById(id);
+    if (part) {
+      return part;
+    }
+
+    const tool = this.workshopToolRepository.findById(id);
+    if (tool && !isWorkshopTool(tool)) {
+      return undefined;
+    }
+
+    return tool;
   }
 }

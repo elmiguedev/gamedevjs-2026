@@ -14,19 +14,43 @@ export class GetStateAction implements Action<void, GameState> {
     let state = this.gameStateService.getState();
     const repairsChanged = state.car.tickRepairs();
     const scrapCollectionChanged = state.scrapCollectAvailableAt > 0 && state.scrapCollectAvailableAt <= Date.now();
+    const robotCanCollect = state.craftedToolIds.includes('robot-recolector')
+      && (state.robotScrapCollectedAt <= 0 || Math.floor((Date.now() - state.robotScrapCollectedAt) / 3000) > 0);
 
-    if (repairsChanged || scrapCollectionChanged) {
+    if (repairsChanged || scrapCollectionChanged || robotCanCollect) {
       state = this.gameStateService.update((current) => {
-        if (!scrapCollectionChanged) {
-          return current;
+        let nextState = current;
+
+        if (scrapCollectionChanged) {
+          const amount = current.craftedToolIds.includes('brazo-mecanico') ? DEFAULT_COLLECT_SCRAP_AMOUNT * 2 : DEFAULT_COLLECT_SCRAP_AMOUNT;
+          nextState = {
+            ...nextState,
+            scrap: nextState.scrap + amount,
+            scrapCollected: nextState.scrapCollected + amount,
+            scrapCollectAvailableAt: 0,
+          };
         }
 
-        return {
-          ...current,
-          scrap: current.scrap + DEFAULT_COLLECT_SCRAP_AMOUNT,
-          scrapCollected: current.scrapCollected + DEFAULT_COLLECT_SCRAP_AMOUNT,
-          scrapCollectAvailableAt: 0,
-        };
+        if (nextState.craftedToolIds.includes('robot-recolector')) {
+          const lastCollectedAt = nextState.robotScrapCollectedAt || Date.now();
+          const elapsedTicks = Math.floor((Date.now() - lastCollectedAt) / 3000);
+
+          if (elapsedTicks > 0) {
+            nextState = {
+              ...nextState,
+              scrap: nextState.scrap + elapsedTicks,
+              scrapCollected: nextState.scrapCollected + elapsedTicks,
+              robotScrapCollectedAt: lastCollectedAt + elapsedTicks * 3000,
+            };
+          } else if (nextState.robotScrapCollectedAt <= 0) {
+            nextState = {
+              ...nextState,
+              robotScrapCollectedAt: Date.now(),
+            };
+          }
+        }
+
+        return nextState;
       });
       this.achievementChecker?.check();
     }

@@ -16,6 +16,7 @@ import type { CarPartInventoryRepository } from '@/core/domain/CarPartInventoryR
 import type { CarCraftingRepository, CraftingStatus } from '@/core/domain/CarCraftingRepository';
 import type { RaceRepository } from '@/core/domain/RaceRepository';
 import type { MechanicProgressRepository } from '@/core/domain/MechanicProgressRepository';
+import type { WorkshopToolRepository } from '@/core/domain/WorkshopToolRepository';
 import type { GameState } from '@/core/domain/GameState';
 import { InMemoryCarPartInventoryRepository } from '@/core/infrastructure/local/InMemoryCarPartInventoryRepository';
 import { InMemoryCarPartRepository } from '@/core/infrastructure/local/InMemoryCarPartRepository';
@@ -23,6 +24,7 @@ import { InMemoryCarCraftingRepository } from '@/core/infrastructure/local/InMem
 import { InMemoryAchievementRepository } from '@/core/infrastructure/local/InMemoryAchievementRepository';
 import { InMemoryMechanicProgressRepository } from '@/core/infrastructure/local/InMemoryMechanicProgressRepository';
 import { InMemoryRaceRepository } from '@/core/infrastructure/local/InMemoryRaceRepository';
+import { InMemoryWorkshopToolRepository } from '@/core/infrastructure/local/InMemoryWorkshopToolRepository';
 import { LocalAchievementChecker } from '@/core/infrastructure/local/LocalAchievementChecker';
 import { LocalGameService } from '@/core/infrastructure/local/LocalGameService';
 
@@ -33,6 +35,7 @@ export class ActionProvider {
   private readonly carPartRepository: CarPartRepository;
   private readonly carPartInventoryRepository: CarPartInventoryRepository;
   private readonly carCraftingRepository: CarCraftingRepository;
+  private readonly workshopToolRepository: WorkshopToolRepository;
   private readonly achievementRepository: AchievementRepository;
   private readonly achievementChecker: AchievementChecker;
   private readonly raceRepository: RaceRepository;
@@ -51,6 +54,7 @@ export class ActionProvider {
     this.carPartRepository = new InMemoryCarPartRepository();
     this.carPartInventoryRepository = new InMemoryCarPartInventoryRepository();
     this.carCraftingRepository = new InMemoryCarCraftingRepository();
+    this.workshopToolRepository = new InMemoryWorkshopToolRepository();
     this.achievementRepository = new InMemoryAchievementRepository();
     this.mechanicProgressRepository = new InMemoryMechanicProgressRepository();
     this.raceRepository = new InMemoryRaceRepository();
@@ -66,6 +70,8 @@ export class ActionProvider {
       scrapCollectAvailableAt: 0,
       cash: 0,
       fuel: 100,
+      craftedToolIds: [],
+      robotScrapCollectedAt: 0,
       racePoints: 0,
       partsCrafted: 0,
       craftedWheelParts: 0,
@@ -130,6 +136,7 @@ export class ActionProvider {
     this.craftCarPartAction = new CraftCarPartAction(
       this.gameStateService,
       this.carPartRepository,
+      this.workshopToolRepository,
       this.mechanicProgressRepository,
       this.carPartInventoryRepository,
       this.carCraftingRepository,
@@ -166,6 +173,10 @@ export class ActionProvider {
 
   static getMechanicProgressRepository(): MechanicProgressRepository {
     return ActionProvider.instance.mechanicProgressRepository;
+  }
+
+  static getWorkshopToolRepository(): WorkshopToolRepository {
+    return ActionProvider.instance.workshopToolRepository;
   }
 
   static getCraftingStatus(): CraftingStatus {

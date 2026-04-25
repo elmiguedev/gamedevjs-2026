@@ -2,6 +2,7 @@ import { Scene, Time } from 'phaser';
 import { ButtonEntity } from '@/game/entities/ButtonEntity';
 import { IconEntity } from '@/game/entities/IconEntity';
 import { MenuEntity } from '@/game/entities/MenuEntity';
+import { ScrapUpgradeListEntity } from '@/game/entities/ScrapUpgradeListEntity';
 import { TitleEntity } from '@/game/entities/TitleEntity';
 import { ToastEntity } from '@/game/entities/ToastEntity';
 import { ResourceHud } from '@/game/huds/ResourceHud';
@@ -13,6 +14,7 @@ export class ScrapScene extends Scene {
   private toast?: ToastEntity;
   private collectButton?: ButtonEntity;
   private collectIcon?: IconEntity<'icons'>;
+  private upgradeList?: ScrapUpgradeListEntity;
   private latestState?: GameState;
   private unsubscribeState?: () => void;
   private cooldownTimer?: Time.TimerEvent;
@@ -40,6 +42,7 @@ export class ScrapScene extends Scene {
     this.collectIcon = new IconEntity(this, this.scale.width / 2 - 60, 468, { sheet: 'icons', icon: 'collectScrap' });
     this.collectIcon.setDisplaySize(24, 24);
     this.collectIcon.setDepth(1002);
+    this.upgradeList = new ScrapUpgradeListEntity(this, 28, 526, 424);
 
     this.unsubscribeState = ActionProvider.subscribeState((state) => {
       this.latestState = state;
@@ -58,6 +61,7 @@ export class ScrapScene extends Scene {
       this.cooldownTimer?.remove(false);
       this.collectButton?.destroy();
       this.collectIcon?.destroy();
+      this.upgradeList?.destroy();
       this.toast?.destroy();
     });
   }
@@ -77,6 +81,18 @@ export class ScrapScene extends Scene {
     this.collectButton.setDisabled(disabled);
     this.collectButton.setLabel(disabled ? `Collecting ${remainingSeconds}s` : 'Collect');
     this.collectIcon.setAlpha(disabled ? 0.45 : 1);
+    this.refreshUpgradeList();
+  }
+
+  private refreshUpgradeList(): void {
+    if (!this.latestState || !this.upgradeList) {
+      return;
+    }
+
+    const tools = ActionProvider.getWorkshopToolRepository()
+      .findAll()
+      .filter((tool) => this.latestState?.craftedToolIds.includes(tool.id));
+    this.upgradeList.refresh(tools);
   }
 
   private async refreshState(): Promise<void> {
