@@ -71,7 +71,7 @@ export class ActionProvider {
       scrapCollected: 0,
       scrapCollectAvailableAt: 0,
       cash: 0,
-      fuel: 0,
+      fuel: 100,
       craftedToolIds: [],
       robotScrapCollectedAt: 0,
       oilWellFuelCollectedAt: 0,
@@ -87,51 +87,6 @@ export class ActionProvider {
     const initialChassisItem = this.carPartInventoryRepository.add(chassisPart);
     this.carPartInventoryRepository.setEquipped(initialChassisItem.id, true);
     this.gameStateService.getState().car.slots.chassis.equippedItemId = initialChassisItem.id;
-
-    const baseWheel = this.carPartRepository.findById('rueda-base');
-    const baseMotor = this.carPartRepository.findById('motor-generico');
-    const baseDirection = this.carPartRepository.findById('direccion-base');
-    const baseNitro = this.carPartRepository.findById('nitro-base');
-    const baseSpoiler = this.carPartRepository.findById('aleron-base');
-
-    if (!baseWheel || !baseMotor || !baseDirection || !baseNitro || !baseSpoiler) {
-      throw new Error('Missing base race parts');
-    }
-
-    const wheelItem = this.carPartInventoryRepository.add(baseWheel);
-    const motorItem = this.carPartInventoryRepository.add(baseMotor);
-    const directionItem = this.carPartInventoryRepository.add(baseDirection);
-    const nitroItem = this.carPartInventoryRepository.add(baseNitro);
-    const spoilerItem = this.carPartInventoryRepository.add(baseSpoiler);
-
-    this.carPartInventoryRepository.setEquipped(wheelItem.id, true);
-    this.gameStateService.getState().car.equipItem(wheelItem);
-    this.carPartInventoryRepository.setEquipped(motorItem.id, true);
-    this.gameStateService.getState().car.equipItem(motorItem);
-    this.carPartInventoryRepository.setEquipped(directionItem.id, true);
-    this.gameStateService.getState().car.equipItem(directionItem);
-    this.carPartInventoryRepository.setEquipped(nitroItem.id, true);
-    this.gameStateService.getState().car.equipItem(nitroItem);
-    this.carPartInventoryRepository.setEquipped(spoilerItem.id, true);
-    this.gameStateService.getState().car.equipItem(spoilerItem);
-
-    const wheelPart = this.carPartRepository.findById('rueda-base');
-    const chassisPartForInventory = this.carPartRepository.findById('chasis-base');
-
-    if (!wheelPart) {
-      throw new Error('Missing base wheel part');
-    }
-
-    if (!chassisPartForInventory) {
-      throw new Error('Missing base chassis part for inventory');
-    }
-
-    for (let index = 0; index < 10; index += 1) {
-      this.carPartInventoryRepository.add(wheelPart);
-      if (index < 9) {
-        this.carPartInventoryRepository.add(chassisPartForInventory);
-      }
-    }
 
     this.achievementChecker.check();
 
