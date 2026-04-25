@@ -63,6 +63,7 @@ export class ActionProvider {
     this.gameStateService = new LocalGameService({
       scrap: 0,
       scrapCollected: 0,
+      scrapCollectAvailableAt: 0,
       cash: 0,
       fuel: 100,
       racePoints: 0,
@@ -140,7 +141,7 @@ export class ActionProvider {
     this.refuelCarAction = new RefuelCarAction(this.gameStateService, this.achievementChecker);
     this.startRaceAction = new StartRaceAction(this.gameStateService, this.raceRepository, this.achievementChecker);
     this.resolveRaceAction = new ResolveRaceAction(this.gameStateService, this.raceRepository, this.achievementChecker);
-    this.getStateAction = new GetStateAction(this.gameStateService);
+    this.getStateAction = new GetStateAction(this.gameStateService, this.achievementChecker);
   }
 
   static collectScrap(): Promise<GameState> {

@@ -55,6 +55,14 @@ export class ButtonEntity extends GameObjects.Container {
     this.refreshVisualState();
   }
 
+  setLabel(label: string): void {
+    if (!this.active || !this.labelText.active) {
+      return;
+    }
+
+    this.labelText.setText(label);
+  }
+
   private refreshVisualState(): void {
     if (!this.active || !this.background.active || !this.labelText.active) {
       return;

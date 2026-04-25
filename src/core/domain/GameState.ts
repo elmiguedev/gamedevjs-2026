@@ -3,6 +3,7 @@ import type { Car } from './Car';
 export interface GameState {
   scrap: number;
   scrapCollected: number;
+  scrapCollectAvailableAt: number;
   cash: number;
   fuel: number;
   racePoints: number;
