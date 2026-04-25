@@ -4,6 +4,7 @@ import { CarOverviewEntity } from '@/game/entities/CarOverviewEntity';
 import { CarStatsPanelEntity } from '@/game/entities/CarStatsPanelEntity';
 import { CarVitalsPanelEntity } from '@/game/entities/CarVitalsPanelEntity';
 import { MenuEntity } from '@/game/entities/MenuEntity';
+import { TitleEntity } from '@/game/entities/TitleEntity';
 import { ResourceHud } from '@/game/huds/ResourceHud';
 import { ActionProvider } from '@/game/providers/ActionProvider';
 import type { GameState } from '@/core/domain/GameState';
@@ -88,12 +89,7 @@ export class CarScene extends Scene {
   }
 
   private createTitle(): void {
-    this.add.text(22, 102, 'GARAGE', {
-      color: '#111111',
-      fontFamily: 'Barlow Condensed, Arial, sans-serif',
-      fontSize: '34px',
-      fontStyle: 'bold',
-    });
+    new TitleEntity(this, 40, 88, 'MI AUTO', 'ESTAS SON TUS PARTES');
   }
 
   // behavior methods

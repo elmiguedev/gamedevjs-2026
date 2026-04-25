@@ -1,9 +1,9 @@
 import { Scene } from 'phaser';
 import { ButtonEntity } from '@/game/entities/ButtonEntity';
 import { AchievementCategorySelectorEntity, type AchievementGroup } from '@/game/entities/AchievementCategorySelectorEntity';
-import { AchievementHeaderEntity } from '@/game/entities/AchievementHeaderEntity';
 import { AchievementListEntity } from '@/game/entities/AchievementListEntity';
 import { MenuEntity } from '@/game/entities/MenuEntity';
+import { TitleEntity } from '@/game/entities/TitleEntity';
 import { ToastEntity } from '@/game/entities/ToastEntity';
 import { ResourceHud } from '@/game/huds/ResourceHud';
 import { ActionProvider } from '@/game/providers/ActionProvider';
@@ -13,7 +13,6 @@ export class AchievementsScene extends Scene {
   // ------------
 
   private resourceHud!: ResourceHud;
-  private header?: AchievementHeaderEntity;
   private selector?: AchievementCategorySelectorEntity;
   private list?: AchievementListEntity;
   private backButton?: ButtonEntity;
@@ -34,8 +33,7 @@ export class AchievementsScene extends Scene {
 
     this.resourceHud = new ResourceHud(this);
     this.toast = new ToastEntity(this, this.scale.width / 2, 70);
-    this.header = new AchievementHeaderEntity(this, this.scale.width / 2, 100);
-    this.add.existing(this.header);
+    this.createTitle();
 
     this.showSelector();
 
@@ -43,13 +41,16 @@ export class AchievementsScene extends Scene {
 
     this.events.once('shutdown', () => {
       this.destroyCategoryView();
-      this.header?.destroy();
       this.toast?.destroy();
     });
   }
 
   // behavior methods
   // ------------------
+
+  private createTitle(): void {
+    new TitleEntity(this, 40, 88, 'LOGROS', 'ELIGE UNA RUTA');
+  }
 
   private showSelector(): void {
     this.destroyCategoryView();

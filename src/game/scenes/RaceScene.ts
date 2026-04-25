@@ -2,6 +2,7 @@ import { Scene } from 'phaser';
 import { MenuEntity } from '@/game/entities/MenuEntity';
 import { RaceListEntity } from '@/game/entities/RaceListEntity';
 import { RaceStatusEntity } from '@/game/entities/RaceStatusEntity';
+import { TitleEntity } from '@/game/entities/TitleEntity';
 import { ResourceHud } from '@/game/huds/ResourceHud';
 import { ActionProvider } from '@/game/providers/ActionProvider';
 import { ToastEntity } from '@/game/entities/ToastEntity';
@@ -48,19 +49,7 @@ export class RaceScene extends Scene {
 
     this.resourceHud = new ResourceHud(this);
     this.toast = new ToastEntity(this, this.scale.width / 2, 70);
-
-    this.add.text(this.scale.width / 2, 94, 'Races', {
-      color: '#111111',
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '30px',
-      fontStyle: 'bold',
-    }).setOrigin(0.5);
-
-    this.add.text(this.scale.width / 2, 128, 'Street races run automatically.', {
-      color: '#444444',
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '15px',
-    }).setOrigin(0.5);
+    this.createTitle();
 
     this.raceList = new RaceListEntity(this, 40, 168, (raceId) => {
       void this.enterRace(raceId);
@@ -114,6 +103,10 @@ export class RaceScene extends Scene {
 
   // behavior methods
   // ------------------
+
+  private createTitle(): void {
+    new TitleEntity(this, 40, 88, 'CARRERAS', 'COMPITE POR CASH Y PUNTOS');
+  }
 
   private async enterRace(raceId: string): Promise<void> {
     try {

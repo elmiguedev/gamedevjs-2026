@@ -4,6 +4,7 @@ import { ResourceHud } from '@/game/huds/ResourceHud';
 import { ActionProvider } from '@/game/providers/ActionProvider';
 import { ConfirmationEntity } from '@/game/entities/ConfirmationEntity';
 import { ToastEntity } from '@/game/entities/ToastEntity';
+import { TitleEntity } from '@/game/entities/TitleEntity';
 import { ButtonEntity } from '@/game/entities/ButtonEntity';
 import { IconEntity } from '@/game/entities/IconEntity';
 import { PART_ICON_BY_PART_ID, SLOT_ICON_BY_TYPE, type PartsIconName, type UiIconName } from '@/game/assets/spritesheets';
@@ -54,7 +55,7 @@ export class InventoryScene extends Scene {
     this.resourceHud = new ResourceHud(this);
     this.toast = new ToastEntity(this, this.scale.width / 2, 70);
 
-    this.createHero();
+    this.createTitle();
     this.createTabs();
 
     this.unsubscribeInventory = ActionProvider.getCarPartInventoryRepository().subscribe((items) => {
@@ -90,29 +91,8 @@ export class InventoryScene extends Scene {
     });
   }
 
-  private createHero(): void {
-    this.add.text(30, 98, 'TALLER', {
-      color: '#111111',
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '42px',
-      fontStyle: 'bold',
-    });
-
-    const banner = this.add.rectangle(32, 158, 190, 34, 0xf2d27a).setOrigin(0, 0.5);
-    banner.setStrokeStyle(1, 0x111111);
-    this.add.text(48, 158, 'CREA. MEJORA. GANA.', {
-      color: '#111111',
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '15px',
-      fontStyle: 'bold',
-    }).setOrigin(0, 0.5);
-
-    this.add.text(258, 154, 'Inventario y fabricación', {
-      color: '#444444',
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '15px',
-      wordWrap: { width: 180 },
-    }).setOrigin(0, 0.5);
+  private createTitle(): void {
+    new TitleEntity(this, 40, 88, 'TALLER', 'CREA. MEJORA. GANA.');
   }
 
   private createTabs(): void {
