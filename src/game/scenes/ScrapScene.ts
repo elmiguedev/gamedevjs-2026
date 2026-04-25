@@ -7,7 +7,9 @@ import { TitleEntity } from '@/game/entities/TitleEntity';
 import { ToastEntity } from '@/game/entities/ToastEntity';
 import { ResourceHud } from '@/game/huds/ResourceHud';
 import { ActionProvider } from '@/game/providers/ActionProvider';
+import { isWorkshopTool } from '@/core/domain/CarCrafting';
 import type { GameState } from '@/core/domain/GameState';
+import type { WorkshopTool } from '@/core/domain/WorkshopTool';
 import { FUEL_PURCHASE_AMOUNT, FUEL_PURCHASE_CASH_COST } from '@/core/utils/Constants';
 
 export class ScrapScene extends Scene {
@@ -21,6 +23,7 @@ export class ScrapScene extends Scene {
   private latestState?: GameState;
   private unsubscribeState?: () => void;
   private cooldownTimer?: Time.TimerEvent;
+  private autoClaimingUpgrade = false;
 
   constructor() {
     super('ScrapScene');
@@ -36,25 +39,25 @@ export class ScrapScene extends Scene {
     const scrapyard = this.add.image(this.scale.width / 2, 280, 'scrapyard');
     scrapyard.setDisplaySize(400, 266);
 
-    this.collectButton = new ButtonEntity(this, this.scale.width / 2, 468, 170, 42, 'Collect scrap', () => {
+    this.collectButton = new ButtonEntity(this, this.scale.width / 2, 410, 220, 42, 'Collect scrap', () => {
       void ActionProvider.collectScrap().then((state) => {
         this.latestState = state;
         this.refreshCollectButton();
       });
     });
-    this.collectIcon = new IconEntity(this, this.scale.width / 2 - 60, 468, { sheet: 'icons', icon: 'collectScrap' });
+    this.collectIcon = new IconEntity(this, this.scale.width / 2 - 84, 410, { sheet: 'icons', icon: 'collectScrap' });
     this.collectIcon.setDisplaySize(24, 24);
     this.collectIcon.setDepth(1002);
-    this.buyFuelButton = new ButtonEntity(this, this.scale.width / 2, 520, 190, 42, `Buy ${FUEL_PURCHASE_AMOUNT} fuel`, () => {
+    this.buyFuelButton = new ButtonEntity(this, this.scale.width / 2, 460, 220, 42, `Buy ${FUEL_PURCHASE_AMOUNT} fuel`, () => {
       void ActionProvider.buyFuel().then((state) => {
         this.latestState = state;
         this.refreshFuelButton();
       });
     });
-    this.buyFuelIcon = new IconEntity(this, this.scale.width / 2 - 82, 520, { sheet: 'icons', icon: 'fuel' });
+    this.buyFuelIcon = new IconEntity(this, this.scale.width / 2 - 84, 460, { sheet: 'icons', icon: 'fuel' });
     this.buyFuelIcon.setDisplaySize(24, 24);
     this.buyFuelIcon.setDepth(1002);
-    this.upgradeList = new ScrapUpgradeListEntity(this, 28, 564, 424);
+    this.upgradeList = new ScrapUpgradeListEntity(this, 24, 490, 432);
 
     this.unsubscribeState = ActionProvider.subscribeState((state) => {
       this.latestState = state;
@@ -116,9 +119,41 @@ export class ScrapScene extends Scene {
     }
 
     const tools = ActionProvider.getWorkshopToolRepository()
-      .findAll()
-      .filter((tool) => this.latestState?.craftedToolIds.includes(tool.id));
-    this.upgradeList.refresh(tools);
+      .findAll();
+    const mechanicLevel = ActionProvider.getMechanicProgressRepository().get().level;
+    const craftingStatus = ActionProvider.getCraftingStatus();
+    this.upgradeList.refresh(tools, this.latestState, mechanicLevel, craftingStatus, (tool) => this.createUpgrade(tool));
+    this.handleReadyUpgrade(craftingStatus);
+  }
+
+  private createUpgrade(tool: WorkshopTool): void {
+    void ActionProvider.craftCarPart(tool.id)
+      .then(() => this.refreshState())
+      .catch(() => this.refreshState());
+  }
+
+  private handleReadyUpgrade(craftingStatus = ActionProvider.getCraftingStatus()): void {
+    if (!craftingStatus.ready || !isWorkshopTool(craftingStatus.ready)) {
+      this.autoClaimingUpgrade = false;
+      return;
+    }
+
+    if (this.autoClaimingUpgrade) {
+      return;
+    }
+
+    this.autoClaimingUpgrade = true;
+    void ActionProvider.claimCraftedPart()
+      .then(() => ActionProvider.getState())
+      .then((state) => {
+        if (!this.sys.isActive()) {
+          return;
+        }
+
+        this.latestState = state;
+        this.autoClaimingUpgrade = false;
+        this.refreshCollectButton();
+      });
   }
 
   private async refreshState(): Promise<void> {

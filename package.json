@@ -12,6 +12,7 @@
     "phaser": "^4.0.0"
   },
   "devDependencies": {
+    "@wvdsh/sdk-js": "^1.2.2",
     "typescript": "^5.8.3",
     "vite": "^8.0.8"
   }

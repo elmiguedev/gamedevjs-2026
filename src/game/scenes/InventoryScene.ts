@@ -148,11 +148,10 @@ export class InventoryScene extends Scene {
     this.contentObjects.push(title);
 
     const parts = ActionProvider.getCarPartRepository().findAll();
-    const tools = ActionProvider.getWorkshopToolRepository().findAll();
     const progress = ActionProvider.getMechanicProgressRepository().get();
     const craftingStatus = ActionProvider.getCraftingStatus();
     const craftBusy = craftingStatus.active !== null || craftingStatus.ready !== null;
-    const availableParts = [...parts, ...tools];
+    const availableParts = parts;
 
     const maxPage = this.getMaxPage(availableParts.length);
     this.craftPage = Math.min(this.craftPage, maxPage);
