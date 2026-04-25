@@ -71,7 +71,10 @@ export class ToastEntity extends GameObjects.Container {
 
     this.activeAchievementIds = nextUnlockedIds;
 
-    newlyUnlocked.forEach((achievement) => this.enqueue(achievement));
+    newlyUnlocked.forEach((achievement) => this.enqueue({
+      title: 'Achievement unlocked',
+      body: achievement.title,
+    }));
   }
 
   private enqueue(achievement: Achievement): void {

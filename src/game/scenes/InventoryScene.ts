@@ -385,9 +385,14 @@ export class InventoryScene extends Scene {
   private handleReadyCraft(status: CraftingStatus): void {
     if (status.ready) {
       if (!this.autoClaiming) {
+        const readyItem = status.ready;
         this.autoClaiming = true;
-        void ActionProvider.claimCraftedPart().then(() => {
+        void ActionProvider.claimCraftedPart().then((claimedPart) => {
           this.autoClaiming = false;
+          this.toast?.show(
+            isWorkshopTool(readyItem) ? 'Upgrade active' : 'Craft completed',
+            `${(claimedPart ?? readyItem).name} ${isWorkshopTool(readyItem) ? 'is now active' : 'added to inventory'}`,
+          );
           void ActionProvider.getState().then((state) => {
             this.latestState = state;
             this.renderActiveTab();

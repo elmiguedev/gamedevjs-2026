@@ -6,6 +6,7 @@ const FONT_FAMILY = 'Barlow Condensed, Arial, sans-serif';
 
 type SlotView = {
   slotId: string;
+  background: GameObjects.Rectangle;
   title: GameObjects.Text;
   part: GameObjects.Text;
   condition: GameObjects.Text;
@@ -43,6 +44,8 @@ export class CarOverviewEntity extends GameObjects.Container {
 
   private createSlotView(slot: CarSlot, x: number, y: number, lineEndX: number, lineEndY: number): void {
     const line = this.scene.add.line(0, 0, x + 2, y + 28, lineEndX, lineEndY, 0x888888, 1).setOrigin(0);
+    const background = this.scene.add.rectangle(x - 6, y - 9, 132, 54, 0xf5f5f5, 1).setOrigin(0);
+    background.setStrokeStyle(1, 0xd1d5db, 1);
     const title = this.scene.add.text(x, y, this.formatTitle(slot), {
       color: '#111111',
       fontFamily: FONT_FAMILY,
@@ -61,8 +64,8 @@ export class CarOverviewEntity extends GameObjects.Container {
       fontStyle: 'bold',
     }).setOrigin(0, 0.5);
 
-    this.slotViews.push({ slotId: slot.id, title, part, condition, line });
-    this.add([line, title, part, condition]);
+    this.slotViews.push({ slotId: slot.id, background, title, part, condition, line });
+    this.add([line, background, title, part, condition]);
   }
 
   refresh(car: Car): void {
@@ -77,6 +80,12 @@ export class CarOverviewEntity extends GameObjects.Container {
       view.title.setText(this.formatTitle(slot));
       view.part.setText(slot.part?.name ?? 'Empty');
       view.condition.setText(slot.part ? `${slot.condition}%` : '-');
+      view.background.setFillStyle(slot.part ? 0xfff2b8 : 0xf5f5f5, 1);
+      view.background.setStrokeStyle(slot.part ? 2 : 1, slot.part ? 0x111111 : 0xd1d5db, 1);
+      view.title.setColor(slot.part ? '#111111' : '#6b7280');
+      view.part.setColor(slot.part ? '#111111' : '#9ca3af');
+      view.condition.setColor(slot.part ? '#111111' : '#9ca3af');
+      view.line.setStrokeStyle(slot.part ? 2 : 1, slot.part ? 0x111111 : 0x888888, 1);
     }
   }
 

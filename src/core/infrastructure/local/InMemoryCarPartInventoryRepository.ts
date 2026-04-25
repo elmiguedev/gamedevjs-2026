@@ -7,6 +7,19 @@ export class InMemoryCarPartInventoryRepository implements CarPartInventoryRepos
   private nextId = 1;
   private readonly listeners = new Set<(items: CarPartInventoryItem[]) => void>();
 
+  snapshot(): { items: CarPartInventoryItem[]; nextId: number } {
+    return {
+      items: this.findAll(),
+      nextId: this.nextId,
+    };
+  }
+
+  hydrate(snapshot: { items: CarPartInventoryItem[]; nextId: number }): void {
+    this.items = snapshot.items;
+    this.nextId = snapshot.nextId;
+    this.notify();
+  }
+
   findAll(): CarPartInventoryItem[] {
     return [...this.items];
   }

@@ -54,6 +54,22 @@ export class InMemoryRaceRepository implements RaceRepository {
   private completed: CompletedRaceResult | null = null;
   private cooldownEndsAt = new Map<string, number>();
 
+  constructor(private readonly onChange?: () => void) {}
+
+  snapshot(): { activeRun: RaceRunResult | null; completed: CompletedRaceResult | null; cooldownEndsAt: [string, number][] } {
+    return {
+      activeRun: this.activeRun,
+      completed: this.completed,
+      cooldownEndsAt: [...this.cooldownEndsAt.entries()],
+    };
+  }
+
+  hydrate(snapshot: { activeRun: RaceRunResult | null; completed: CompletedRaceResult | null; cooldownEndsAt: [string, number][] }): void {
+    this.activeRun = snapshot.activeRun;
+    this.completed = snapshot.completed;
+    this.cooldownEndsAt = new Map(snapshot.cooldownEndsAt);
+  }
+
   findAll(): Race[] {
     return [...this.races];
   }
@@ -101,6 +117,7 @@ export class InMemoryRaceRepository implements RaceRepository {
       endsAt: now + race.durationSeconds * 1000,
     };
 
+    this.onChange?.();
     return this.activeRun;
   }
 
@@ -128,6 +145,7 @@ export class InMemoryRaceRepository implements RaceRepository {
     this.completed = { race, position, reward, points };
     this.cooldownEndsAt.set(race.id, now + race.cooldownSeconds * 1000);
     this.activeRun = null;
+    this.onChange?.();
   }
 
   claimRace(): { race: Race; position: 1 | 2 | 3; reward: number; points: number } | null {
@@ -137,6 +155,7 @@ export class InMemoryRaceRepository implements RaceRepository {
 
     const completed = this.completed;
     this.completed = null;
+    this.onChange?.();
     return completed;
   }
 }

@@ -18,6 +18,12 @@ export class InMemoryAchievementRepository implements AchievementRepository {
   private readonly achievements = ACHIEVEMENTS.map((achievement) => ({ ...achievement }));
   private readonly listeners = new Set<(achievements: Achievement[]) => void>();
 
+  hydrate(achievements: Achievement[]): void {
+    for (const achievement of achievements) {
+      this.save(achievement);
+    }
+  }
+
   findAll(): Achievement[] {
     return this.achievements.map((achievement) => ({ ...achievement }));
   }

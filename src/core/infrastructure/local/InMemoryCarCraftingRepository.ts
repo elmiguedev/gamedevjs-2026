@@ -6,6 +6,18 @@ export class InMemoryCarCraftingRepository implements CarCraftingRepository {
   private active: CarCraftJob | null = null;
   private ready: CraftableItem | null = null;
 
+  snapshot(): CraftingStatus {
+    return {
+      active: this.active,
+      ready: this.ready,
+    };
+  }
+
+  hydrate(snapshot: CraftingStatus): void {
+    this.active = snapshot.active;
+    this.ready = snapshot.ready;
+  }
+
   getStatus(now: number = Date.now()): CraftingStatus {
     this.sync(now);
 
