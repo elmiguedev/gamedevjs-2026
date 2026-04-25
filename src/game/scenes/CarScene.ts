@@ -1,27 +1,30 @@
-import { Scene } from 'phaser';
-import { CarEntity } from '@/game/entities/CarEntity';
-import { CarPartDetailsEntity } from '@/game/entities/CarPartDetailsEntity';
+import { Scene, Time } from 'phaser';
+import { CarActionsPanelEntity } from '@/game/entities/CarActionsPanelEntity';
+import { CarOverviewEntity } from '@/game/entities/CarOverviewEntity';
+import { CarStatsPanelEntity } from '@/game/entities/CarStatsPanelEntity';
+import { CarVitalsPanelEntity } from '@/game/entities/CarVitalsPanelEntity';
 import { MenuEntity } from '@/game/entities/MenuEntity';
 import { ResourceHud } from '@/game/huds/ResourceHud';
 import { ActionProvider } from '@/game/providers/ActionProvider';
 import type { GameState } from '@/core/domain/GameState';
-import type { CarSlot } from '@/core/domain/CarSlot';
 
 export class CarScene extends Scene {
   // entities
   // ------------
 
   private resourceHud?: ResourceHud;
-  private carEntity?: CarEntity;
-  private detailsEntity?: CarPartDetailsEntity;
+  private carOverview?: CarOverviewEntity;
+  private statsPanel?: CarStatsPanelEntity;
+  private vitalsPanel?: CarVitalsPanelEntity;
+  private actionsPanel?: CarActionsPanelEntity;
 
   // state
   // --------------
 
   private currentState?: GameState;
   private initialized = false;
-  private selectedSlotId = 'engine';
   private unsubscribeState?: () => void;
+  private repairTimer?: Time.TimerEvent;
 
   // constructor
   // ----------------
@@ -36,12 +39,15 @@ export class CarScene extends Scene {
   create(): void {
     this.currentState = undefined;
     this.initialized = false;
-    this.carEntity = undefined;
-    this.detailsEntity = undefined;
+    this.carOverview = undefined;
+    this.statsPanel = undefined;
+    this.vitalsPanel = undefined;
+    this.actionsPanel = undefined;
 
     this.createBackground();
     this.createHud();
     this.createMenu();
+    this.createTitle();
     this.createCar();
 
     this.events.once('shutdown', () => this.destroyScene());
@@ -84,7 +90,7 @@ export class CarScene extends Scene {
   private createTitle(): void {
     this.add.text(22, 102, 'GARAGE', {
       color: '#111111',
-      fontFamily: 'Arial, sans-serif',
+      fontFamily: 'Barlow Condensed, Arial, sans-serif',
       fontSize: '34px',
       fontStyle: 'bold',
     });
@@ -94,31 +100,41 @@ export class CarScene extends Scene {
   // ------------------
 
   private buildCar(state: GameState): void {
-
-    this.carEntity = new CarEntity(this, 100, 120, state.car, {
-      selectedSlotId: this.selectedSlotId,
-      onSelectSlot: (slot) => {
-        this.selectedSlotId = slot.id;
-        this.refreshScene();
-      },
-    });
-
-    this.detailsEntity = new CarPartDetailsEntity(
+    this.carOverview = new CarOverviewEntity(this, 0, 132, state.car);
+    this.statsPanel = new CarStatsPanelEntity(this, 20, 360, 440, 86, state.car.attributes);
+    this.vitalsPanel = new CarVitalsPanelEntity(this, 20, 458, 440, 78, state.car);
+    this.actionsPanel = new CarActionsPanelEntity(
       this,
-      240,
-      418,
-      this.findSlotById(state, this.selectedSlotId) ?? state.car.slots.engine,
-      (slotId) => {
-        void ActionProvider.repairCarSlot(slotId).then((updatedState) => {
+      20,
+      548,
+      state,
+      (slotIds) => {
+        void this.repairSlots(slotIds).then((updatedState) => {
           this.currentState = updatedState;
           if (!this.sys.isActive()) {
             return;
           }
 
           this.refreshScene();
-        });
+        }).catch(() => void this.refreshState());
+      },
+      () => {
+        void ActionProvider.refuelCar().then((updatedState) => {
+          this.currentState = updatedState;
+          if (!this.sys.isActive()) {
+            return;
+          }
+
+          this.refreshScene();
+        }).catch(() => void this.refreshState());
       },
     );
+
+    this.repairTimer = this.time.addEvent({
+      delay: 1000,
+      loop: true,
+      callback: () => void this.refreshState(),
+    });
 
     this.refreshScene();
   }
@@ -126,38 +142,51 @@ export class CarScene extends Scene {
 
 
   private refreshScene(): void {
-    if (!this.currentState || !this.carEntity) {
+    if (!this.currentState || !this.carOverview) {
       return;
     }
 
-    this.carEntity.refresh(this.currentState.car, this.selectedSlotId);
+    this.carOverview.refresh(this.currentState.car);
+    this.statsPanel?.refresh(this.currentState.car.attributes);
+    this.vitalsPanel?.refresh(this.currentState.car);
+    this.actionsPanel?.refresh(this.currentState);
+  }
 
-    const selectedSlot = this.findSlotById(this.currentState, this.selectedSlotId) ?? this.currentState.car.slots.engine;
-    this.detailsEntity?.update(selectedSlot);
+  private async repairSlots(slotIds: string[]): Promise<GameState> {
+    let state = this.currentState ?? await ActionProvider.getState();
+
+    for (const slotId of slotIds) {
+      state = await ActionProvider.repairCarSlot(slotId);
+    }
+
+    return state;
+  }
+
+  private async refreshState(): Promise<void> {
+    const state = await ActionProvider.getState();
+    if (!this.sys.isActive()) {
+      return;
+    }
+
+    this.currentState = state;
+    this.refreshScene();
   }
 
   private destroyScene(): void {
     this.unsubscribeState?.();
-    this.carEntity?.destroy();
-    this.detailsEntity?.destroy();
+    this.repairTimer?.remove(false);
+    this.carOverview?.destroy();
+    this.statsPanel?.destroy();
+    this.vitalsPanel?.destroy();
+    this.actionsPanel?.destroy();
     this.unsubscribeState = undefined;
+    this.repairTimer = undefined;
     this.resourceHud = undefined;
-    this.carEntity = undefined;
-    this.detailsEntity = undefined;
+    this.carOverview = undefined;
+    this.statsPanel = undefined;
+    this.vitalsPanel = undefined;
+    this.actionsPanel = undefined;
     this.currentState = undefined;
     this.initialized = false;
-  }
-
-  private findSlotById(state: GameState, slotId: string): CarSlot | null {
-    const slots = [
-      state.car.slots.chassis,
-      state.car.slots.wheels,
-      state.car.slots.engine,
-      state.car.slots.steering,
-      state.car.slots.nitro,
-      state.car.slots.spoiler,
-    ];
-
-    return slots.find((slot) => slot.id === slotId) ?? null;
   }
 }

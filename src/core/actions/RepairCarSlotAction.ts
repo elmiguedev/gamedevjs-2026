@@ -10,7 +10,7 @@ export class RepairCarSlotAction implements Action<{ slotId: string }, GameState
   ) {}
 
   async execute(input: { slotId: string }): Promise<GameState> {
-    return this.gameStateService.update((current) => {
+    const state = await this.gameStateService.update((current) => {
       const slot = current.car.getSlotById(input.slotId);
 
       if (!slot || !slot.part) {
@@ -36,5 +36,7 @@ export class RepairCarSlotAction implements Action<{ slotId: string }, GameState
     });
 
     this.achievementChecker.check();
+
+    return state;
   }
 }

@@ -155,7 +155,7 @@ export class Car {
     return lookup[type as Exclude<CarPartType, 'rueda'>] ?? null;
   }
 
-  private listSlots(): CarSlot[] {
+  listSlots(): CarSlot[] {
     return [
       this.slots.chassis,
       this.slots.wheels,
