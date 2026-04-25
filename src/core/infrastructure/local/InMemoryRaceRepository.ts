@@ -73,7 +73,7 @@ export class InMemoryRaceRepository implements RaceRepository {
   }
 
   canEnterRace(raceId: string, now: number = Date.now()): boolean {
-    return !this.activeRun && this.getRaceCooldownRemaining(raceId, now) <= 0;
+    return !this.activeRun && !this.completed && this.getRaceCooldownRemaining(raceId, now) <= 0;
   }
 
   startRace(raceId: string, now: number = Date.now()): RaceRunResult {
@@ -85,6 +85,10 @@ export class InMemoryRaceRepository implements RaceRepository {
 
     if (this.activeRun) {
       throw new Error('A race is already in progress');
+    }
+
+    if (this.completed) {
+      throw new Error('Claim race reward first');
     }
 
     if (!this.canEnterRace(raceId, now)) {

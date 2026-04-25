@@ -61,9 +61,14 @@ export class ActionProvider {
     this.mechanicProgressRepository = new InMemoryMechanicProgressRepository();
     this.raceRepository = new InMemoryRaceRepository();
     const chassisPart = this.carPartRepository.findByType('chasis')[0];
+    const wheelsPart = this.carPartRepository.findByType('rueda')[0];
 
     if (!chassisPart) {
       throw new Error('Missing base chassis part');
+    }
+
+    if (!wheelsPart) {
+      throw new Error('Missing base wheels part');
     }
 
     this.gameStateService = new LocalGameService({
@@ -80,13 +85,16 @@ export class ActionProvider {
       craftedWheelParts: 0,
       racesCompleted: 0,
       raceWins: 0,
-      car: Car.createInitial(chassisPart),
+      car: Car.createInitial(chassisPart, wheelsPart),
     });
     this.achievementChecker = new LocalAchievementChecker(this.gameStateService, this.achievementRepository);
 
     const initialChassisItem = this.carPartInventoryRepository.add(chassisPart);
     this.carPartInventoryRepository.setEquipped(initialChassisItem.id, true);
     this.gameStateService.getState().car.slots.chassis.equippedItemId = initialChassisItem.id;
+    const initialWheelsItem = this.carPartInventoryRepository.add(wheelsPart);
+    this.carPartInventoryRepository.setEquipped(initialWheelsItem.id, true);
+    this.gameStateService.getState().car.slots.wheels.equippedItemId = initialWheelsItem.id;
 
     this.achievementChecker.check();
 

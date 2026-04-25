@@ -32,10 +32,10 @@ export class Car {
     public readonly maxFuel: number = 100,
   ) {}
 
-  static createInitial(chassisPart: CarPart): Car {
+  static createInitial(chassisPart: CarPart, wheelsPart: CarPart): Car {
     return new Car({
       chassis: new CarSlot('chassis', 'chasis', chassisPart, null),
-      wheels: new CarSlot('wheels', 'rueda'),
+      wheels: new CarSlot('wheels', 'rueda', wheelsPart, null),
       engine: new CarSlot('engine', 'motor'),
       steering: new CarSlot('steering', 'direccion'),
       nitro: new CarSlot('nitro', 'nitro'),
@@ -61,14 +61,11 @@ export class Car {
   }
 
   hasCompleteCar(): boolean {
-    return [
-      this.slots.chassis,
-      this.slots.wheels,
-      this.slots.engine,
-      this.slots.steering,
-      this.slots.nitro,
-      this.slots.spoiler,
-    ].every((slot) => slot.part !== null);
+    return this.listSlots().every((slot) => slot.part !== null);
+  }
+
+  hasRequiredRaceParts(): boolean {
+    return this.listRequiredRaceSlots().every((slot) => slot.part !== null);
   }
 
   hasBrokenPart(): boolean {
@@ -76,7 +73,7 @@ export class Car {
   }
 
   canRace(): boolean {
-    return this.listSlots().every((slot) => slot.part !== null && slot.isUsable());
+    return this.listRequiredRaceSlots().every((slot) => slot.isUsable());
   }
 
   hasFuel(amount: number): boolean {
@@ -163,6 +160,15 @@ export class Car {
       this.slots.steering,
       this.slots.nitro,
       this.slots.spoiler,
+    ];
+  }
+
+  private listRequiredRaceSlots(): CarSlot[] {
+    return [
+      this.slots.chassis,
+      this.slots.wheels,
+      this.slots.engine,
+      this.slots.steering,
     ];
   }
 }

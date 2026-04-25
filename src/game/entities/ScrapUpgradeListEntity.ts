@@ -68,10 +68,17 @@ export class ScrapUpgradeListEntity extends GameObjects.Container {
       fontFamily: FONT_FAMILY,
       fontSize: '10px',
       fontStyle: 'bold',
-      wordWrap: { width: CARD_WIDTH - 20 },
+      wordWrap: { width: CARD_WIDTH - 34 },
     });
 
-    card.add([background, icon, title, effect]);
+    const requiredLevel = this.scene.add.text(CARD_WIDTH - 10, 42, `LV ${tool.requiredLevel}`, {
+      color: levelLocked ? '#9ca3af' : '#111111',
+      fontFamily: FONT_FAMILY,
+      fontSize: '9px',
+      fontStyle: 'bold',
+    }).setOrigin(1, 0);
+
+    card.add([background, icon, title, effect, requiredLevel]);
 
     if (owned) {
       card.add(this.createStatusLabel('ACTIVE', '#111111', 73));

@@ -98,7 +98,7 @@ export class RaceScene extends Scene {
       this.toast?.destroy();
     });
 
-    void this.refreshRaces();
+    void this.tickRaces();
   }
 
   // behavior methods
@@ -120,10 +120,6 @@ export class RaceScene extends Scene {
   }
 
   private async tickRaces(): Promise<void> {
-    if (this.uiState.kind !== 'running') {
-      return;
-    }
-
     const resolution = await ActionProvider.resolveRace();
 
     if (resolution) {
@@ -179,8 +175,8 @@ export class RaceScene extends Scene {
         return { label: `Cooldown ${cooldown}s`, disabled: true, icon: 'cooldown' satisfies UiIconName };
       }
 
-      if (!state.car.hasCompleteCar()) {
-        return { label: 'Need full car', disabled: true, icon: 'needFullCar' satisfies UiIconName };
+      if (!state.car.hasRequiredRaceParts()) {
+        return { label: 'Need core parts', disabled: true, icon: 'needFullCar' satisfies UiIconName };
       }
 
       if (!state.car.canRace()) {

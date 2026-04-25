@@ -20,8 +20,8 @@ export class StartRaceAction implements Action<{ raceId: string }, RaceRunResult
 
     const state = this.gameStateService.getState();
 
-    if (!state.car.hasCompleteCar()) {
-      throw new Error('Car is not complete');
+    if (!state.car.hasRequiredRaceParts()) {
+      throw new Error('Car needs chassis, engine, wheels and steering');
     }
 
     if (!state.car.canRace()) {
