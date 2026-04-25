@@ -50,7 +50,7 @@ export class AchievementsScene extends Scene {
   // ------------------
 
   private createTitle(): void {
-    new TitleEntity(this, 40, 88, 'LOGROS', 'ELIGE UNA RUTA');
+    new TitleEntity(this, 40, 88, 'ACHIEVEMENTS', 'CHOOSE A PATH');
   }
 
   private createHeroImage(): void {

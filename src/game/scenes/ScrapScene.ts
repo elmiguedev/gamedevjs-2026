@@ -81,7 +81,7 @@ export class ScrapScene extends Scene {
   }
 
   private createTitle(): void {
-    new TitleEntity(this, 40, 88, 'RECOLECCION', 'JUNTA SCRAP PARA FABRICAR');
+    new TitleEntity(this, 40, 88, 'SCRAPYARD', 'COLLECT SCRAP TO BUILD');
   }
 
   private refreshCollectButton(): void {

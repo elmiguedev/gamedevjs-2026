@@ -13,7 +13,7 @@ export class AchievementCategorySelectorEntity extends GameObjects.Container {
   ) {
     super(scene, x, y);
 
-    const title = this.scene.add.text(40, 0, 'Rutas de logros', {
+    const title = this.scene.add.text(40, 0, 'Achievement paths', {
       color: '#111111',
       fontFamily: 'Arial, sans-serif',
       fontSize: '20px',
@@ -43,20 +43,20 @@ export class AchievementCategorySelectorEntity extends GameObjects.Container {
       fontStyle: 'bold',
     });
 
-    const hallDescription = this.scene.add.text(124, 106, 'Copas, carreras y podios.', {
+    const hallDescription = this.scene.add.text(124, 106, 'Cups, races, and podiums.', {
       color: '#444444',
       fontFamily: 'Arial, sans-serif',
       fontSize: '13px',
     });
 
-    const garageDescription = this.scene.add.text(124, 220, 'Crafteo, colección y armado.', {
+    const garageDescription = this.scene.add.text(124, 220, 'Crafting, collection, and builds.', {
       color: '#444444',
       fontFamily: 'Arial, sans-serif',
       fontSize: '13px',
     });
 
-    const hallButton = new ButtonEntity(this.scene, 376, 102, 92, 32, 'Ver', () => this.onSelect('hall'));
-    const garageButton = new ButtonEntity(this.scene, 376, 216, 92, 32, 'Ver', () => this.onSelect('garage'));
+    const hallButton = new ButtonEntity(this.scene, 376, 102, 92, 32, 'View', () => this.onSelect('hall'));
+    const garageButton = new ButtonEntity(this.scene, 376, 216, 92, 32, 'View', () => this.onSelect('garage'));
 
     this.add([title, hallPanel, garagePanel, hallIcon, garageIcon, hallTitle, garageTitle, hallDescription, garageDescription, hallButton, garageButton]);
     this.scene.add.existing(this);

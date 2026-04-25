@@ -29,7 +29,7 @@ export class CarStatsPanelEntity extends GameObjects.Container {
   }
 
   private createTitle(): void {
-    const title = this.scene.add.text(14, 12, 'ESTADISTICAS DEL AUTO', {
+    const title = this.scene.add.text(14, 12, 'CAR STATS', {
       color: '#111111',
       fontFamily: FONT_FAMILY,
       fontSize: '14px',
@@ -40,10 +40,10 @@ export class CarStatsPanelEntity extends GameObjects.Container {
 
   private createStats(attributes: CarAttributes): void {
     const stats = [
-      { key: 'speed', label: 'VELOCIDAD' },
-      { key: 'acceleration', label: 'ACELERACION' },
-      { key: 'direction', label: 'DIRECCION' },
-      { key: 'resistance', label: 'RESISTENCIA' },
+      { key: 'speed', label: 'SPEED' },
+      { key: 'acceleration', label: 'ACCELERATION' },
+      { key: 'direction', label: 'STEERING' },
+      { key: 'resistance', label: 'RESISTANCE' },
     ] as const;
 
     stats.forEach((stat, index) => {

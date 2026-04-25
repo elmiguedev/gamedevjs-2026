@@ -32,7 +32,7 @@ export class CarVitalsPanelEntity extends GameObjects.Container {
   private createDamageBlock(): void {
     const icon = new IconEntity(this.scene, 22, 36, { sheet: 'icons', icon: 'damage' });
     icon.setDisplaySize(26, 26);
-    const title = this.scene.add.text(44, 24, 'DANO GENERAL', {
+    const title = this.scene.add.text(44, 24, 'OVERALL DAMAGE', {
       color: '#111111',
       fontFamily: FONT_FAMILY,
       fontSize: '13px',
@@ -53,7 +53,7 @@ export class CarVitalsPanelEntity extends GameObjects.Container {
     const x = width / 2 + 22;
     const icon = new IconEntity(this.scene, x, 36, { sheet: 'icons', icon: 'tank' });
     icon.setDisplaySize(28, 28);
-    const title = this.scene.add.text(x + 24, 24, 'COMBUSTIBLE', {
+    const title = this.scene.add.text(x + 24, 24, 'FUEL TANK', {
       color: '#111111',
       fontFamily: FONT_FAMILY,
       fontSize: '13px',

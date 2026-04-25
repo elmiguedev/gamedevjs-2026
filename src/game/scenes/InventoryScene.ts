@@ -101,7 +101,7 @@ export class InventoryScene extends Scene {
   }
 
   private createTitle(): void {
-    new TitleEntity(this, 40, 88, 'TALLER', 'CREA. MEJORA. GANA.');
+    new TitleEntity(this, 40, 88, 'WORKSHOP', 'BUILD. UPGRADE. WIN.');
   }
 
   private createWorkshopImage(): void {
@@ -111,8 +111,8 @@ export class InventoryScene extends Scene {
 
   private createTabs(): void {
     this.tabs = new TabPanelEntity(this, CONTENT_X, 292, CONTENT_WIDTH, 44, this.activeTab, [
-      { key: 'craft', label: 'MESA DE TRABAJO', icon: 'repair' },
-      { key: 'inventory', label: 'INVENTARIO', icon: 'inventory' },
+      { key: 'craft', label: 'WORKBENCH', icon: 'repair' },
+      { key: 'inventory', label: 'INVENTORY', icon: 'inventory' },
     ], (tab) => {
       this.activeTab = tab;
       this.inventoryPage = 0;
@@ -139,7 +139,7 @@ export class InventoryScene extends Scene {
       return;
     }
 
-    const title = this.add.text(CONTENT_X + 8, LIST_Y, 'MESA DE TRABAJO', {
+    const title = this.add.text(CONTENT_X + 8, LIST_Y, 'WORKBENCH', {
       color: '#111111',
       fontFamily: 'Barlow Condensed, Arial, sans-serif',
       fontSize: '16px',
@@ -177,7 +177,7 @@ export class InventoryScene extends Scene {
     });
 
     if (!pageParts.length) {
-      const empty = this.add.text(CONTENT_X + 8, y, 'No hay piezas disponibles para tu nivel actual.', {
+      const empty = this.add.text(CONTENT_X + 8, y, 'No craftables available yet.', {
         color: '#444444',
         fontFamily: 'Barlow Condensed, Arial, sans-serif',
         fontSize: '13px',
@@ -250,12 +250,12 @@ export class InventoryScene extends Scene {
       return 'Lista';
     }
 
-    return 'Crear';
+    return 'Craft';
   }
 
   private getCraftButtonLabel(part: CraftableItem, status: CraftingStatus, alreadyOwned: boolean, levelLocked: boolean): string {
     if (alreadyOwned) {
-      return 'Activa';
+      return 'Active';
     }
 
     if (levelLocked) {
@@ -267,11 +267,11 @@ export class InventoryScene extends Scene {
 
   private formatCraftDetail(part: CraftableItem, alreadyOwned: boolean, levelLocked: boolean): string {
     if (alreadyOwned) {
-      return 'MEJORA ACTIVA';
+      return 'UPGRADE ACTIVE';
     }
 
     if (levelLocked) {
-      return `Requiere nivel ${part.requiredLevel}`;
+      return `Requires level ${part.requiredLevel}`;
     }
 
     return `Scrap ${part.scrapCost} | Cash ${part.cashCost} | ${part.craftTimeSeconds}s`;
@@ -298,7 +298,7 @@ export class InventoryScene extends Scene {
   }
 
   private renderInventory(): void {
-    const title = this.add.text(CONTENT_X + 8, LIST_Y, `INVENTARIO (${this.inventoryItems.length})`, {
+    const title = this.add.text(CONTENT_X + 8, LIST_Y, `INVENTORY (${this.inventoryItems.length})`, {
       color: '#111111',
       fontFamily: 'Barlow Condensed, Arial, sans-serif',
       fontSize: '16px',
@@ -307,7 +307,7 @@ export class InventoryScene extends Scene {
     this.contentObjects.push(title);
 
     if (!this.inventoryItems.length) {
-      const empty = this.add.text(CONTENT_X + 8, LIST_Y + 42, 'Tu inventario está vacío. Crea piezas en el taller.', {
+      const empty = this.add.text(CONTENT_X + 8, LIST_Y + 42, 'Your inventory is empty. Craft parts in the workshop.', {
         color: '#444444',
         fontFamily: 'Barlow Condensed, Arial, sans-serif',
         fontSize: '13px',
@@ -349,7 +349,7 @@ export class InventoryScene extends Scene {
       wordWrap: { width: 170 },
     }).setOrigin(0, 0.5);
 
-    const badge = this.add.text(46, 10, item.equipped ? 'EQUIPADA' : item.part.type.toUpperCase(), {
+    const badge = this.add.text(46, 10, item.equipped ? 'EQUIPPED' : this.formatPartType(item.part.type).toUpperCase(), {
       color: '#111111',
       fontFamily: 'Barlow Condensed, Arial, sans-serif',
       fontSize: '11px',
@@ -433,6 +433,19 @@ export class InventoryScene extends Scene {
     }
 
     return 'scrapYardCrafting';
+  }
+
+  private formatPartType(type: CarPart['type']): string {
+    const labels: Record<CarPart['type'], string> = {
+      chasis: 'Chassis',
+      rueda: 'Wheels',
+      nitro: 'Nitro',
+      motor: 'Engine',
+      direccion: 'Steering',
+      aleron: 'Spoiler',
+    };
+
+    return labels[type];
   }
 
   private getPartIcon(part: CarPart): { sheet: 'icons'; icon: UiIconName } | { sheet: 'parts'; icon: PartsIconName } {

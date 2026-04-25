@@ -89,7 +89,7 @@ export class CarScene extends Scene {
   }
 
   private createTitle(): void {
-    new TitleEntity(this, 40, 88, 'MI AUTO', 'ESTAS SON TUS PARTES');
+    new TitleEntity(this, 40, 88, 'MY CAR', 'THESE ARE YOUR PARTS');
   }
 
   // behavior methods

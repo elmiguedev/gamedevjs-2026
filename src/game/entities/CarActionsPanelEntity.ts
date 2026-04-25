@@ -88,13 +88,13 @@ export class CarActionsPanelEntity extends GameObjects.Container {
   }
 
   private createButtons(): void {
-    this.repairButton = new GarageActionButtonEntity(this.scene, 0, 0, 205, 44, 'repair', 'REPARAR', '', () => {
+    this.repairButton = new GarageActionButtonEntity(this.scene, 0, 0, 205, 44, 'repair', 'REPAIR', '', () => {
       const slots = this.getRepairTargets(this.currentState.car);
       if (slots.length > 0) {
         this.onRepair(slots.map((slot) => slot.id));
       }
     });
-    this.refuelButton = new GarageActionButtonEntity(this.scene, 235, 0, 205, 44, 'fuel', 'CARGAR FUEL', '', () => {
+    this.refuelButton = new GarageActionButtonEntity(this.scene, 235, 0, 205, 44, 'fuel', 'REFUEL', '', () => {
       this.onRefuel();
     });
 
@@ -108,12 +108,12 @@ export class CarActionsPanelEntity extends GameObjects.Container {
     const repairCost = repairTargets.reduce((total, slot) => total + this.getRepairCost(slot), 0);
     const repairSeconds = repairTargets.reduce((max, slot) => Math.max(max, this.getRepairSeconds(slot)), 0);
     const hasEnoughScrap = state.scrap >= repairCost;
-    this.repairButton.setContent('REPARAR', repairTargets.length > 0 ? `${repairCost} scrap / ${repairSeconds}s` : 'SIN DANO');
+    this.repairButton.setContent('REPAIR', repairTargets.length > 0 ? `${repairCost} scrap / ${repairSeconds}s` : 'NO DAMAGE');
     this.repairButton.setDisabled(repairTargets.length === 0 || !hasEnoughScrap);
 
     const fuelNeeded = Math.max(0, state.car.maxFuel - state.car.fuel);
     const refuelAmount = Math.min(state.fuel, fuelNeeded);
-    this.refuelButton.setContent('CARGAR FUEL', fuelNeeded > 0 ? `${refuelAmount} fuel` : 'TANQUE LLENO');
+    this.refuelButton.setContent('REFUEL', fuelNeeded > 0 ? `${refuelAmount} fuel` : 'TANK FULL');
     this.refuelButton.setDisabled(refuelAmount <= 0);
   }
 

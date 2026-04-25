@@ -16,6 +16,6 @@ export class MenuScene extends Scene {
   }
 
   private createTitle(): void {
-    new TitleEntity(this, 40, 88, 'MENU', 'ELIGE TU PROXIMO PASO');
+    new TitleEntity(this, 40, 88, 'MENU', 'CHOOSE YOUR NEXT STEP');
   }
 }

@@ -85,6 +85,15 @@ export class CarOverviewEntity extends GameObjects.Container {
   }
 
   private formatTitle(slot: CarSlot): string {
-    return slot.type.toUpperCase();
+    const labels: Record<CarSlot['type'], string> = {
+      chasis: 'CHASSIS',
+      rueda: 'WHEELS',
+      nitro: 'NITRO',
+      motor: 'ENGINE',
+      direccion: 'STEERING',
+      aleron: 'SPOILER',
+    };
+
+    return labels[slot.type];
   }
 }

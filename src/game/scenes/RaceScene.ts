@@ -105,7 +105,7 @@ export class RaceScene extends Scene {
   // ------------------
 
   private createTitle(): void {
-    new TitleEntity(this, 40, 88, 'CARRERAS', 'COMPITE POR CASH Y PUNTOS');
+    new TitleEntity(this, 40, 88, 'RACES', 'COMPETE FOR CASH AND POINTS');
   }
 
   private async enterRace(raceId: string): Promise<void> {
