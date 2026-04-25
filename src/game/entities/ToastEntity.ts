@@ -5,11 +5,16 @@ import { ActionProvider } from '@/game/providers/ActionProvider';
 const TOAST_DURATION_MS = 3000;
 const TOAST_FADE_MS = 180;
 
+type ToastMessage = {
+  title: string;
+  body: string;
+};
+
 export class ToastEntity extends GameObjects.Container {
   private readonly frame: GameObjects.Rectangle;
   private readonly titleText: GameObjects.Text;
   private readonly bodyText: GameObjects.Text;
-  private readonly queue: Achievement[] = [];
+  private readonly queue: ToastMessage[] = [];
   private activeAchievementIds = new Set<string>();
   private unsubscribeAchievements?: () => void;
   private hideTimer?: Phaser.Time.TimerEvent;
@@ -77,8 +82,12 @@ export class ToastEntity extends GameObjects.Container {
     }));
   }
 
-  private enqueue(achievement: Achievement): void {
-    this.queue.push(achievement);
+  showMessage(title: string, body: string): void {
+    this.enqueue({ title, body });
+  }
+
+  private enqueue(message: ToastMessage): void {
+    this.queue.push(message);
 
     if (!this.isShowing) {
       void this.showNext();
@@ -86,14 +95,15 @@ export class ToastEntity extends GameObjects.Container {
   }
 
   private async showNext(): Promise<void> {
-    const achievement = this.queue.shift();
+    const message = this.queue.shift();
 
-    if (!achievement || !this.active) {
+    if (!message || !this.active) {
       return;
     }
 
     this.isShowing = true;
-    this.bodyText.setText(achievement.title);
+    this.titleText.setText(message.title);
+    this.bodyText.setText(message.body);
     this.setVisible(true);
 
     this.scene.tweens.killTweensOf(this);

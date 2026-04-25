@@ -389,7 +389,7 @@ export class InventoryScene extends Scene {
         this.autoClaiming = true;
         void ActionProvider.claimCraftedPart().then((claimedPart) => {
           this.autoClaiming = false;
-          this.toast?.show(
+          this.toast?.showMessage(
             isWorkshopTool(readyItem) ? 'Upgrade active' : 'Craft completed',
             `${(claimedPart ?? readyItem).name} ${isWorkshopTool(readyItem) ? 'is now active' : 'added to inventory'}`,
           );
