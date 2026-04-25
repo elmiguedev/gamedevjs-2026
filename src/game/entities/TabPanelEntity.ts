@@ -1,4 +1,5 @@
 import { GameObjects, Scene } from 'phaser';
+import { SoundManager } from '@/game/audio/SoundManager';
 import type { UiIconName } from '@/game/assets/spritesheets';
 import { IconEntity } from '@/game/entities/IconEntity';
 
@@ -66,6 +67,7 @@ export class TabPanelEntity<T extends string> extends GameObjects.Container {
 
       background.setInteractive({ useHandCursor: true });
       background.on('pointerdown', () => {
+        SoundManager.play('tab');
         this.refresh(item.key);
         this.onSelect(item.key);
       });

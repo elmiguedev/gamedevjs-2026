@@ -93,7 +93,7 @@ export class ScrapUpgradeListEntity extends GameObjects.Container {
       return card;
     }
 
-    const button = new ButtonEntity(this.scene, CARD_WIDTH / 2, 72, 90, 24, this.formatPrice(tool), () => onCraft(tool), !canCraft);
+    const button = new ButtonEntity(this.scene, CARD_WIDTH / 2, 72, 90, 24, this.formatPrice(tool), () => onCraft(tool), !canCraft, 'craft');
     button.setDepth(1002);
     card.add(button);
 

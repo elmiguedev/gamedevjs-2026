@@ -22,7 +22,6 @@ export class RaceScene extends Scene {
   private resourceHud!: ResourceHud;
   private raceList?: RaceListEntity;
   private raceStatus?: RaceStatusEntity;
-  private statusText?: Phaser.GameObjects.Text;
   private toast?: ToastEntity;
   private unsubscribeState?: () => void;
   private refreshTimer?: Phaser.Time.TimerEvent;
@@ -62,13 +61,6 @@ export class RaceScene extends Scene {
     });
     this.raceStatus.hide();
 
-    this.statusText = this.add.text(40, 552, '', {
-      color: '#111111',
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '16px',
-      fontStyle: 'bold',
-    });
-
     this.unsubscribeState = ActionProvider.subscribeState((state) => {
       this.latestState = state;
       this.refreshRaces();
@@ -94,7 +86,6 @@ export class RaceScene extends Scene {
       this.refreshTimer?.remove(false);
       this.raceList?.destroy();
       this.raceStatus?.destroy();
-      this.statusText?.destroy();
       this.toast?.destroy();
     });
 
@@ -111,11 +102,10 @@ export class RaceScene extends Scene {
   private async enterRace(raceId: string): Promise<void> {
     try {
       await ActionProvider.startRace(raceId);
-      this.setStatus('Race started');
       this.refreshRaces();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Race failed';
-      this.setStatus(message);
+      this.toast?.showMessage('Race unavailable', message);
     }
   }
 
@@ -149,18 +139,17 @@ export class RaceScene extends Scene {
     if (this.uiState.kind === 'result') {
       this.raceList.setVisible(false);
       this.raceStatus.showResult(this.uiState.position, this.uiState.reward, this.uiState.points);
-      this.statusText?.setText('Race complete');
       return;
     }
 
     if (activeRun) {
       const activeRace = races.find((race) => race.id === activeRun.raceId);
       const remaining = Math.max(0, Math.ceil((activeRun.endsAt - Date.now()) / 1000));
+      const total = Math.max(1, Math.ceil((activeRun.endsAt - activeRun.startedAt) / 1000));
 
       this.uiState = { kind: 'running', race: activeRace ?? races[0], remainingSeconds: remaining };
       this.raceList.setVisible(false);
-      this.raceStatus.showProgress(activeRace?.name ?? activeRun.raceId, remaining);
-      this.statusText?.setText(`Active race: ${activeRace?.name ?? activeRun.raceId}`);
+      this.raceStatus.showProgress(activeRace?.name ?? activeRun.raceId, remaining, total);
       return;
     }
 
@@ -200,11 +189,5 @@ export class RaceScene extends Scene {
     } else {
       this.raceList.updateStatuses(resolver);
     }
-
-    this.statusText?.setText('No race active');
-  }
-
-  private setStatus(message: string): void {
-    this.statusText?.setText(message);
   }
 }

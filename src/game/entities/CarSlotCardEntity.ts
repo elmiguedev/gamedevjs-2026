@@ -1,4 +1,5 @@
 import { GameObjects, Geom, Scene } from 'phaser';
+import { SoundManager } from '@/game/audio/SoundManager';
 import type { CarPart } from '@/core/domain/CarPart';
 import type { CarSlot } from '@/core/domain/CarSlot';
 import { IconEntity, type IconDefinition } from '@/game/entities/IconEntity';
@@ -68,7 +69,10 @@ export class CarSlotCardEntity extends GameObjects.Container {
     // this.add([this.background, this.border, this.icon, this.titleText, this.partNameText, this.badgeText, this.statsText]);
     this.setSize(width, height);
     this.setInteractive(new Geom.Rectangle(-width / 2, -height / 2, width, height), Geom.Rectangle.Contains);
-    this.on('pointerdown', () => this.onSelect?.(this.currentSlot));
+    this.on('pointerdown', () => {
+      SoundManager.play('tab');
+      this.onSelect?.(this.currentSlot);
+    });
     this.scene.add.existing(this);
 
     this.refresh(slot, false);

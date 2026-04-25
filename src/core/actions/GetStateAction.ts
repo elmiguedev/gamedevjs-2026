@@ -4,8 +4,8 @@ import type { GameState } from '../domain/GameState';
 import type { GameStateService } from '../domain/GameStateService';
 import { DEFAULT_COLLECT_SCRAP_AMOUNT, OIL_WELL_FUEL_AMOUNT, OIL_WELL_FUEL_INTERVAL_SECONDS } from '../utils/Constants';
 
-const ROBOT_SCRAP_AMOUNT = 10;
-const ROBOT_SCRAP_INTERVAL_MS = 2000;
+const ROBOT_SCRAP_AMOUNT = 1;
+const ROBOT_SCRAP_INTERVAL_MS = 1000;
 
 export class GetStateAction implements Action<void, GameState> {
   constructor(

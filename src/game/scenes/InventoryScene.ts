@@ -24,8 +24,11 @@ type WorkshopRow = {
   craftButton: ButtonEntity;
 };
 
-const CONTENT_X = 28;
+const CONTENT_X = 18;
 const CONTENT_WIDTH = 424;
+const ROW_X = CONTENT_X - 10;
+const ROW_WIDTH = CONTENT_WIDTH + 10;
+const INVENTORY_ROW_X = ROW_X + 10;
 const LIST_Y = 356;
 const LIST_HEIGHT = 190;
 const ITEMS_PER_PAGE = 3;
@@ -105,12 +108,12 @@ export class InventoryScene extends Scene {
   }
 
   private createWorkshopImage(): void {
-    const workshop = this.add.image(325, 178, 'workshop');
-    workshop.setDisplaySize(270, 190);
+    const workshop = this.add.image(this.scale.width / 2, 190, 'workshop');
+    workshop.setDisplaySize(350, 215);
   }
 
   private createTabs(): void {
-    this.tabs = new TabPanelEntity(this, CONTENT_X, 292, CONTENT_WIDTH, 44, this.activeTab, [
+    this.tabs = new TabPanelEntity(this, CONTENT_X + 10, 302, CONTENT_WIDTH, 44, this.activeTab, [
       { key: 'craft', label: 'WORKBENCH', icon: 'repair' },
       { key: 'inventory', label: 'INVENTORY', icon: 'inventory' },
     ], (tab) => {
@@ -139,7 +142,7 @@ export class InventoryScene extends Scene {
       return;
     }
 
-    const title = this.add.text(CONTENT_X + 8, LIST_Y, 'WORKBENCH', {
+    const title = this.add.text(ROW_X + 18, LIST_Y, 'WORKBENCH', {
       color: '#111111',
       fontFamily: 'Barlow Condensed, Arial, sans-serif',
       fontSize: '16px',
@@ -180,7 +183,7 @@ export class InventoryScene extends Scene {
         color: '#444444',
         fontFamily: 'Barlow Condensed, Arial, sans-serif',
         fontSize: '13px',
-        wordWrap: { width: CONTENT_WIDTH - 36 },
+        wordWrap: { width: ROW_WIDTH - 36 },
       });
       this.contentObjects.push(empty);
     }
@@ -194,8 +197,8 @@ export class InventoryScene extends Scene {
   }
 
   private createCraftRow(y: number, part: CraftableItem, disabled: boolean, craftingStatus: CraftingStatus, alreadyOwned = false, levelLocked = false): WorkshopRow {
-    const row = this.add.container(CONTENT_X + 18, y);
-    const panel = this.add.rectangle(0, 0, CONTENT_WIDTH - 16, 42, 0xffffff).setOrigin(0, 0.5);
+    const row = this.add.container(ROW_X + 18, y);
+    const panel = this.add.rectangle(0, 0, ROW_WIDTH - 16, 42, 0xffffff).setOrigin(0, 0.5);
     panel.setStrokeStyle(1, 0xcccccc);
 
     const icon = new IconEntity(this, 22, 0, this.getCraftIcon(part));
@@ -215,17 +218,17 @@ export class InventoryScene extends Scene {
 
     const active = craftingStatus.active?.part.id === part.id ? craftingStatus.active : null;
     const ready = craftingStatus.ready?.id === part.id;
-    const craftButton = new ButtonEntity(this, 330, 0, 68, 28, this.getCraftButtonLabel(part, craftingStatus, alreadyOwned, levelLocked), () => {
+    const craftButton = new ButtonEntity(this, 340, 0, 68, 28, this.getCraftButtonLabel(part, craftingStatus, alreadyOwned, levelLocked), () => {
       void ActionProvider.craftCarPart(part.id)
         .then(() => this.renderActiveTab())
         .catch(() => this.renderActiveTab());
-    }, disabled);
+    }, disabled, 'craft');
 
     row.add([panel, icon, name, cost, craftButton]);
 
     if (active || ready) {
       craftButton.setVisible(false);
-      const statusText = this.add.text(330, -8, ready ? 'LISTA' : this.formatActiveCraft(active), {
+      const statusText = this.add.text(340, -8, ready ? 'LISTA' : this.formatActiveCraft(active), {
         color: '#111111',
         fontFamily: 'Barlow Condensed, Arial, sans-serif',
         fontSize: '13px',
@@ -233,7 +236,7 @@ export class InventoryScene extends Scene {
       }).setOrigin(0.5);
 
       const progress = ready ? 1 : this.getCraftProgress(active);
-      const progressBar = new ProgressBarEntity(this, 292, 10, 76, 4, progress);
+      const progressBar = new ProgressBarEntity(this, 302, 10, 76, 4, progress);
       row.add([statusText, progressBar]);
     }
 
@@ -297,7 +300,7 @@ export class InventoryScene extends Scene {
   }
 
   private renderInventory(): void {
-    const title = this.add.text(CONTENT_X + 8, LIST_Y, `INVENTORY (${this.inventoryItems.length})`, {
+    const title = this.add.text(INVENTORY_ROW_X + 8, LIST_Y, `INVENTORY (${this.inventoryItems.length})`, {
       color: '#111111',
       fontFamily: 'Barlow Condensed, Arial, sans-serif',
       fontSize: '16px',
@@ -306,11 +309,11 @@ export class InventoryScene extends Scene {
     this.contentObjects.push(title);
 
     if (!this.inventoryItems.length) {
-      const empty = this.add.text(CONTENT_X + 8, LIST_Y + 42, 'Your inventory is empty. Craft parts in the workshop.', {
+      const empty = this.add.text(INVENTORY_ROW_X + 8, LIST_Y + 42, 'Your inventory is empty. Craft parts in the workshop.', {
         color: '#444444',
         fontFamily: 'Barlow Condensed, Arial, sans-serif',
         fontSize: '13px',
-        wordWrap: { width: CONTENT_WIDTH - 36 },
+        wordWrap: { width: ROW_WIDTH - 36 },
       });
       this.contentObjects.push(empty);
       return;
@@ -322,7 +325,7 @@ export class InventoryScene extends Scene {
     const pageItems = this.inventoryItems.slice(start, start + ITEMS_PER_PAGE);
 
     pageItems.forEach((item, index) => {
-      const row = this.createInventoryRow(CONTENT_X + 8, LIST_Y + 42 + index * 48, item);
+      const row = this.createInventoryRow(INVENTORY_ROW_X + 8, LIST_Y + 42 + index * 48, item);
       this.contentObjects.push(row);
     });
 
@@ -334,7 +337,7 @@ export class InventoryScene extends Scene {
 
   private createInventoryRow(x: number, y: number, item: CarPartInventoryItem): GameObjects.Container {
     const card = this.add.container(x, y);
-    const panel = this.add.rectangle(0, 0, CONTENT_WIDTH - 16, 42, 0xffffff).setOrigin(0, 0.5);
+    const panel = this.add.rectangle(0, 0, ROW_WIDTH - 16, 42, 0xffffff).setOrigin(0, 0.5);
     panel.setStrokeStyle(1, 0xcccccc);
 
     const icon = new IconEntity(this, 22, 0, this.getPartIcon(item.part));
@@ -357,9 +360,9 @@ export class InventoryScene extends Scene {
       padding: { left: 4, right: 4, top: 2, bottom: 2 },
     }).setOrigin(0, 0.5);
 
-    const equipButton = new ButtonEntity(this, 330, 0, 68, 28, item.equipped ? 'On' : 'Equip', () => {
+    const equipButton = new ButtonEntity(this, 340, 0, 68, 28, item.equipped ? 'On' : 'Equip', () => {
       void this.requestEquip(item.id);
-    }, item.equipped);
+    }, item.equipped, 'equip');
 
     card.add([panel, icon, name, badge, equipButton]);
     return card;

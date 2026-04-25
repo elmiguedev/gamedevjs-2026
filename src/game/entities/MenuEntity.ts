@@ -1,4 +1,5 @@
 import { Scene } from 'phaser';
+import { SoundManager } from '@/game/audio/SoundManager';
 import { IconEntity } from '@/game/entities/IconEntity';
 import type { UiIconName } from '@/game/assets/spritesheets';
 
@@ -95,6 +96,7 @@ export class MenuEntity {
 
     circle.setInteractive({ useHandCursor: true });
     circle.on('pointerdown', () => {
+      SoundManager.play('menu');
       if (!active) {
         this.scene.scene.start(item.targetScene);
       }

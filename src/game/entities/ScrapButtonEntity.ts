@@ -1,4 +1,5 @@
 import type { Scene, GameObjects } from 'phaser';
+import { SoundManager } from '@/game/audio/SoundManager';
 
 export class ScrapButtonEntity {
   private button?: GameObjects.Rectangle;
@@ -17,6 +18,9 @@ export class ScrapButtonEntity {
     this.button.setScrollFactor(0);
     this.button.setDepth(900);
     this.button.setInteractive({ useHandCursor: true });
-    this.button.on('pointerdown', this.onPressed);
+    this.button.on('pointerdown', () => {
+      SoundManager.play('collect');
+      this.onPressed();
+    });
   }
 }

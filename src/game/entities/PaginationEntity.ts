@@ -1,4 +1,5 @@
 import { GameObjects, Scene } from 'phaser';
+import { SoundManager } from '@/game/audio/SoundManager';
 
 const FONT_FAMILY = 'Barlow Condensed, Arial, sans-serif';
 
@@ -50,7 +51,10 @@ export class PaginationEntity extends GameObjects.Container {
     }).setOrigin(0.5);
 
     circle.setInteractive({ useHandCursor: true });
-    circle.on('pointerdown', onPressed);
+    circle.on('pointerdown', () => {
+      SoundManager.play('button');
+      onPressed();
+    });
     container.add([circle, text]);
     return container;
   }

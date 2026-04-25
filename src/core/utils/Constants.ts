@@ -4,3 +4,5 @@ export const FUEL_PURCHASE_AMOUNT = 10;
 export const FUEL_PURCHASE_CASH_COST = 30;
 export const OIL_WELL_FUEL_AMOUNT = 1;
 export const OIL_WELL_FUEL_INTERVAL_SECONDS = 4;
+export const SCRAP_SALE_AMOUNT = 200;
+export const SCRAP_SALE_CASH_REWARD = 10;

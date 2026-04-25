@@ -1,4 +1,5 @@
 import { GameObjects, Scene } from 'phaser';
+import { SoundManager, type SoundKey } from '@/game/audio/SoundManager';
 
 export class ButtonEntity extends GameObjects.Container {
   private readonly background: GameObjects.Rectangle;
@@ -16,6 +17,7 @@ export class ButtonEntity extends GameObjects.Container {
     label: string,
     private readonly onPressed: () => void,
     disabled = false,
+    private readonly sound: SoundKey = 'button',
   ) {
     super(scene, x, y);
 
@@ -40,6 +42,7 @@ export class ButtonEntity extends GameObjects.Container {
         return;
       }
 
+      SoundManager.play(this.sound);
       this.onPressed();
     });
 

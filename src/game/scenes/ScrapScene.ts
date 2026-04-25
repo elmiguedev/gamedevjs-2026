@@ -10,7 +10,7 @@ import { ActionProvider } from '@/game/providers/ActionProvider';
 import { isWorkshopTool } from '@/core/domain/CarCrafting';
 import type { GameState } from '@/core/domain/GameState';
 import type { WorkshopTool } from '@/core/domain/WorkshopTool';
-import { FUEL_PURCHASE_AMOUNT, FUEL_PURCHASE_CASH_COST } from '@/core/utils/Constants';
+import { FUEL_PURCHASE_AMOUNT, FUEL_PURCHASE_CASH_COST, SCRAP_SALE_AMOUNT, SCRAP_SALE_CASH_REWARD } from '@/core/utils/Constants';
 
 export class ScrapScene extends Scene {
   private resourceHud!: ResourceHud;
@@ -19,6 +19,8 @@ export class ScrapScene extends Scene {
   private collectIcon?: IconEntity<'icons'>;
   private buyFuelButton?: ButtonEntity;
   private buyFuelIcon?: IconEntity<'icons'>;
+  private sellScrapButton?: ButtonEntity;
+  private sellScrapIcon?: IconEntity<'icons'>;
   private upgradeList?: ScrapUpgradeListEntity;
   private latestState?: GameState;
   private unsubscribeState?: () => void;
@@ -44,19 +46,28 @@ export class ScrapScene extends Scene {
         this.latestState = state;
         this.refreshCollectButton();
       });
-    });
+    }, false, 'collect');
     this.collectIcon = new IconEntity(this, this.scale.width / 2 - 84, 410, { sheet: 'icons', icon: 'collectScrap' });
     this.collectIcon.setDisplaySize(24, 24);
     this.collectIcon.setDepth(1002);
-    this.buyFuelButton = new ButtonEntity(this, this.scale.width / 2, 460, 220, 42, `Buy ${FUEL_PURCHASE_AMOUNT} fuel`, () => {
+    this.buyFuelButton = new ButtonEntity(this, 132, 460, 208, 42, `Buy ${FUEL_PURCHASE_AMOUNT} fuel`, () => {
       void ActionProvider.buyFuel().then((state) => {
         this.latestState = state;
         this.refreshFuelButton();
       });
-    });
-    this.buyFuelIcon = new IconEntity(this, this.scale.width / 2 - 84, 460, { sheet: 'icons', icon: 'fuel' });
+    }, false, 'refuel');
+    this.buyFuelIcon = new IconEntity(this, 54, 460, { sheet: 'icons', icon: 'fuel' });
     this.buyFuelIcon.setDisplaySize(24, 24);
     this.buyFuelIcon.setDepth(1002);
+    this.sellScrapButton = new ButtonEntity(this, 348, 460, 208, 42, 'Sell scrap', () => {
+      void ActionProvider.sellScrap().then((state) => {
+        this.latestState = state;
+        this.refreshCollectButton();
+      });
+    }, false, 'sell');
+    this.sellScrapIcon = new IconEntity(this, 270, 460, { sheet: 'icons', icon: 'scrapYardCrafting' });
+    this.sellScrapIcon.setDisplaySize(24, 24);
+    this.sellScrapIcon.setDepth(1002);
     this.upgradeList = new ScrapUpgradeListEntity(this, 24, 490, 432);
 
     this.unsubscribeState = ActionProvider.subscribeState((state) => {
@@ -78,6 +89,8 @@ export class ScrapScene extends Scene {
       this.collectIcon?.destroy();
       this.buyFuelButton?.destroy();
       this.buyFuelIcon?.destroy();
+      this.sellScrapButton?.destroy();
+      this.sellScrapIcon?.destroy();
       this.upgradeList?.destroy();
       this.toast?.destroy();
     });
@@ -99,6 +112,7 @@ export class ScrapScene extends Scene {
     this.collectButton.setLabel(disabled ? `Collecting ${remainingSeconds}s` : 'Collect scrap');
     this.collectIcon.setAlpha(disabled ? 0.45 : 1);
     this.refreshFuelButton();
+    this.refreshSellScrapButton();
     this.refreshUpgradeList();
   }
 
@@ -109,8 +123,19 @@ export class ScrapScene extends Scene {
 
     const disabled = this.latestState.cash < FUEL_PURCHASE_CASH_COST;
     this.buyFuelButton.setDisabled(disabled);
-    this.buyFuelButton.setLabel(`Buy ${FUEL_PURCHASE_AMOUNT} fuel - ${FUEL_PURCHASE_CASH_COST} cash`);
+    this.buyFuelButton.setLabel(`Buy fuel - $${FUEL_PURCHASE_CASH_COST}`);
     this.buyFuelIcon.setAlpha(disabled ? 0.45 : 1);
+  }
+
+  private refreshSellScrapButton(): void {
+    if (!this.latestState || !this.sellScrapButton || !this.sellScrapIcon) {
+      return;
+    }
+
+    const disabled = this.latestState.scrap < SCRAP_SALE_AMOUNT;
+    this.sellScrapButton.setDisabled(disabled);
+    this.sellScrapButton.setLabel(`Sell ${SCRAP_SALE_AMOUNT}S - $${SCRAP_SALE_CASH_REWARD}`);
+    this.sellScrapIcon.setAlpha(disabled ? 0.45 : 1);
   }
 
   private refreshUpgradeList(): void {

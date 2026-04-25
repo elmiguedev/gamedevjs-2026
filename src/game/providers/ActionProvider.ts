@@ -7,6 +7,7 @@ import { GetStateAction } from '@/core/actions/GetStateAction';
 import { RepairCarSlotAction } from '@/core/actions/RepairCarSlotAction';
 import { ResolveRaceAction, type RaceResolution } from '@/core/actions/ResolveRaceAction';
 import { RefuelCarAction } from '@/core/actions/RefuelCarAction';
+import { SellScrapAction } from '@/core/actions/SellScrapAction';
 import { StartRaceAction } from '@/core/actions/StartRaceAction';
 import { Car } from '@/core/domain/Car';
 import { CarSlot } from '@/core/domain/CarSlot';
@@ -57,6 +58,7 @@ export class ActionProvider {
   private readonly equipCarPartAction: EquipCarPartAction;
   private readonly repairCarSlotAction: RepairCarSlotAction;
   private readonly refuelCarAction: RefuelCarAction;
+  private readonly sellScrapAction: SellScrapAction;
   private readonly startRaceAction: StartRaceAction;
   private readonly resolveRaceAction: ResolveRaceAction;
   private readonly getStateAction: GetStateAction;
@@ -125,6 +127,7 @@ export class ActionProvider {
     this.equipCarPartAction = new EquipCarPartAction(this.gameStateService, this.carPartInventoryRepository, this.achievementChecker);
     this.repairCarSlotAction = new RepairCarSlotAction(this.gameStateService, this.achievementChecker);
     this.refuelCarAction = new RefuelCarAction(this.gameStateService, this.achievementChecker);
+    this.sellScrapAction = new SellScrapAction(this.gameStateService);
     this.startRaceAction = new StartRaceAction(this.gameStateService, this.raceRepository, this.achievementChecker);
     this.resolveRaceAction = new ResolveRaceAction(this.gameStateService, this.raceRepository, this.achievementChecker);
     this.getStateAction = new GetStateAction(this.gameStateService, this.achievementChecker);
@@ -190,6 +193,10 @@ export class ActionProvider {
 
   static refuelCar(amount?: number): Promise<GameState> {
     return ActionProvider.instance.executeAndPersist(() => ActionProvider.instance.refuelCarAction.execute({ amount }));
+  }
+
+  static sellScrap(): Promise<GameState> {
+    return ActionProvider.instance.executeAndPersist(() => ActionProvider.instance.sellScrapAction.execute());
   }
 
   static getRaceRepository(): RaceRepository {

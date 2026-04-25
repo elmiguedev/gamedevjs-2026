@@ -1,5 +1,6 @@
 import { Scene } from 'phaser';
 import { ACHIEVEMENTS_SCENE_URL, CAR_DRAFT_URL, SCRAPYARD_URL, SPRITESHEET_FRAME_SIZE, SPRITESHEET_KEYS, SPRITESHEET_URLS, WORKSHOP_URL } from '@/game/assets/spritesheets';
+import { SoundManager } from '@/game/audio/SoundManager';
 
 export class BootloaderScene extends Scene {
   // constructor
@@ -33,6 +34,7 @@ export class BootloaderScene extends Scene {
   }
 
   create(): void {
+    SoundManager.startBackgroundMusic();
     this.scene.start('CarScene');
   }
 }

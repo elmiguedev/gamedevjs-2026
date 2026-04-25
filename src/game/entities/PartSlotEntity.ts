@@ -1,4 +1,5 @@
 import { GameObjects, Geom, Scene } from 'phaser';
+import { SoundManager } from '@/game/audio/SoundManager';
 import type { CarPartType } from '@/core/domain/CarPart';
 import type { CarSlot } from '@/core/domain/CarSlot';
 
@@ -28,7 +29,10 @@ export class PartSlotEntity extends GameObjects.Container {
     this.render();
     this.setSize(this.width, this.height);
     this.setInteractive(new Geom.Rectangle(-this.width / 2, -this.height / 2, this.width, this.height), Geom.Rectangle.Contains);
-    this.on('pointerdown', () => this.onSelect?.(this.slot));
+    this.on('pointerdown', () => {
+      SoundManager.play('tab');
+      this.onSelect?.(this.slot);
+    });
   }
 
   refresh(): void {

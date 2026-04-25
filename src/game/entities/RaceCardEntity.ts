@@ -67,7 +67,7 @@ export class RaceCardEntity extends GameObjects.Container {
 
     this.actionButton = new ButtonEntity(this.scene, 344, 86, 88, 32, 'Enter', () => {
       this.onEnter(this.race.id);
-    });
+    }, false, 'race');
 
     this.add([panel, this.raceIcon, this.titleText, this.infoText, this.statusIcon, this.statusText, this.actionButton]);
   }

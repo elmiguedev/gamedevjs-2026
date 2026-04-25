@@ -1,4 +1,6 @@
 import { GameObjects, Scene } from 'phaser';
+import { SoundManager } from '@/game/audio/SoundManager';
+import type { SoundKey } from '@/game/audio/SoundManager';
 import type { Car } from '@/core/domain/Car';
 import type { CarSlot } from '@/core/domain/CarSlot';
 import type { GameState } from '@/core/domain/GameState';
@@ -22,6 +24,7 @@ class GarageActionButtonEntity extends GameObjects.Container {
     title: string,
     detail: string,
     private readonly onPressed: () => void,
+    private readonly sound: SoundKey = 'button',
   ) {
     super(scene, x, y);
 
@@ -47,6 +50,7 @@ class GarageActionButtonEntity extends GameObjects.Container {
     this.background.setInteractive({ useHandCursor: true });
     this.background.on('pointerdown', () => {
       if (!this.disabled) {
+        SoundManager.play(this.sound);
         this.onPressed();
       }
     });
@@ -93,10 +97,10 @@ export class CarActionsPanelEntity extends GameObjects.Container {
       if (slots.length > 0) {
         this.onRepair(slots.map((slot) => slot.id));
       }
-    });
+    }, 'repair');
     this.refuelButton = new GarageActionButtonEntity(this.scene, 235, 0, 205, 44, 'fuel', 'REFUEL', '', () => {
       this.onRefuel();
-    });
+    }, 'refuel');
 
     this.add([this.repairButton, this.refuelButton]);
   }
@@ -105,11 +109,18 @@ export class CarActionsPanelEntity extends GameObjects.Container {
     this.currentState = state;
 
     const repairTargets = this.getRepairTargets(state.car);
+    const repairingSeconds = this.getRepairingSeconds(state.car);
     const repairCost = repairTargets.reduce((total, slot) => total + this.getRepairCost(slot), 0);
     const repairSeconds = repairTargets.reduce((max, slot) => Math.max(max, this.getRepairSeconds(slot)), 0);
     const hasEnoughScrap = state.scrap >= repairCost;
-    this.repairButton.setContent('REPAIR', repairTargets.length > 0 ? `${repairCost} scrap / ${repairSeconds}s` : 'NO DAMAGE');
-    this.repairButton.setDisabled(repairTargets.length === 0 || !hasEnoughScrap);
+
+    if (repairingSeconds > 0) {
+      this.repairButton.setContent('REPAIR', `REPAIRING ${repairingSeconds}s`);
+      this.repairButton.setDisabled(true);
+    } else {
+      this.repairButton.setContent('REPAIR', repairTargets.length > 0 ? `${repairCost} scrap / ${repairSeconds}s` : 'NO DAMAGE');
+      this.repairButton.setDisabled(repairTargets.length === 0 || !hasEnoughScrap);
+    }
 
     const fuelNeeded = Math.max(0, state.car.maxFuel - state.car.fuel);
     const refuelAmount = Math.min(state.fuel, fuelNeeded);
@@ -121,6 +132,16 @@ export class CarActionsPanelEntity extends GameObjects.Container {
     return car.listSlots()
       .filter((slot) => slot.part !== null && slot.condition < 100 && !slot.isRepairing())
       .sort((a, b) => a.condition - b.condition);
+  }
+
+  private getRepairingSeconds(car: Car): number {
+    return car.listSlots().reduce((max, slot) => {
+      if (!slot.repairingUntil || !slot.isRepairing()) {
+        return max;
+      }
+
+      return Math.max(max, Math.ceil((slot.repairingUntil - Date.now()) / 1000));
+    }, 0);
   }
 
   private getRepairCost(slot: CarSlot): number {
