@@ -18,7 +18,6 @@ export class ScrapUpgradeListEntity extends GameObjects.Container {
     this.cards = [];
 
     if (!tools.length) {
-      this.createEmptyState();
       return;
     }
 
@@ -30,18 +29,6 @@ export class ScrapUpgradeListEntity extends GameObjects.Container {
       this.cards.push(card);
       this.add(card);
     });
-  }
-
-  private createEmptyState(): void {
-    const text = this.scene.add.text(this.width, 0, 'SIN MEJORAS ACTIVAS', {
-      color: '#444444',
-      fontFamily: FONT_FAMILY,
-      fontSize: '13px',
-      fontStyle: 'bold',
-    }).setOrigin(1, 0.5);
-    const container = this.scene.add.container(0, 0, [text]);
-    this.cards.push(container);
-    this.add(container);
   }
 
   private createCard(x: number, tool: WorkshopTool): GameObjects.Container {

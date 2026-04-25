@@ -16,7 +16,7 @@ export class AchievementListEntity extends GameObjects.Container {
   constructor(scene: Scene, x: number, y: number) {
     super(scene, x, y);
 
-    this.frame = this.scene.add.rectangle(0, 0, 400, 394, 0xffffff).setOrigin(0, 0);
+    this.frame = this.scene.add.rectangle(0, 0, 400, 346, 0xffffff).setOrigin(0, 0);
     this.frame.setAlpha(0);
     this.titleText = this.scene.add.text(12, 12, '', {
       color: '#111111',
@@ -25,7 +25,7 @@ export class AchievementListEntity extends GameObjects.Container {
       fontStyle: 'bold',
     });
 
-    this.pagination = new PaginationEntity(this.scene, 200, 360, () => this.previousPage(), () => this.nextPage());
+    this.pagination = new PaginationEntity(this.scene, 200, 342, () => this.previousPage(), () => this.nextPage());
 
     this.add([this.frame, this.titleText, this.pagination]);
     this.scene.add.existing(this);
@@ -45,13 +45,13 @@ export class AchievementListEntity extends GameObjects.Container {
     const start = this.currentPage * ITEMS_PER_PAGE;
     const pageItems = this.achievements.slice(start, start + ITEMS_PER_PAGE);
 
-    let yOffset = 44;
+    let yOffset = 36;
 
     pageItems.forEach((achievement) => {
       const row = new AchievementRowEntity(this.scene, 0, yOffset, achievement);
       this.rows.push(row);
       this.add(row);
-      yOffset += 82;
+      yOffset += 68;
     });
 
     this.updatePagination();

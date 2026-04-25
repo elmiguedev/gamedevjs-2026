@@ -34,6 +34,7 @@ export class AchievementsScene extends Scene {
     this.resourceHud = new ResourceHud(this);
     this.toast = new ToastEntity(this, this.scale.width / 2, 70);
     this.createTitle();
+    this.createHeroImage();
 
     this.showSelector();
 
@@ -50,6 +51,11 @@ export class AchievementsScene extends Scene {
 
   private createTitle(): void {
     new TitleEntity(this, 40, 88, 'LOGROS', 'ELIGE UNA RUTA');
+  }
+
+  private createHeroImage(): void {
+    const image = this.add.image(330, 150, 'achievements-scene');
+    image.setDisplaySize(230, 156);
   }
 
   private showSelector(): void {

@@ -1,7 +1,7 @@
 import { GameObjects, Scene } from 'phaser';
 import type { Achievement } from '@/core/domain/Achievement';
 import { IconEntity } from '@/game/entities/IconEntity';
-import type { AchievementIconName, UiIconName } from '@/game/assets/spritesheets';
+import type { AchievementIconName } from '@/game/assets/spritesheets';
 
 const ACHIEVEMENT_ICON_BY_ID = {
   'cup-rust-sprint': 'rustSprint',
@@ -16,46 +16,42 @@ const ACHIEVEMENT_ICON_BY_ID = {
   'meta-first-race': 'firstCheckeredFlag',
 } as const satisfies Record<string, AchievementIconName>;
 
-const STATUS_ICON_BY_STATE = {
-  unlocked: 'unlocked',
-  locked: 'locked',
-  hidden: 'disabled',
-} as const satisfies Record<string, UiIconName>;
-
 export class AchievementRowEntity extends GameObjects.Container {
   constructor(scene: Scene, x: number, y: number, achievement: Achievement) {
     super(scene, x, y);
 
     const color = achievement.unlocked ? '#111111' : achievement.checked ? '#6b7280' : '#d1d5db';
-    const statusLabel = achievement.unlocked ? 'Unlocked' : achievement.checked ? 'Locked' : 'Hidden';
-    const statusIcon = achievement.unlocked ? STATUS_ICON_BY_STATE.unlocked : achievement.checked ? STATUS_ICON_BY_STATE.locked : STATUS_ICON_BY_STATE.hidden;
+    const alpha = achievement.unlocked ? 1 : 0.45;
 
-    const panel = this.scene.add.rectangle(0, 0, 400, 78, 0xffffff).setOrigin(0, 0);
+    const panel = this.scene.add.rectangle(0, 0, 400, 60, achievement.unlocked ? 0xf8e4a1 : 0xffffff).setOrigin(0, 0);
     panel.setStrokeStyle(1, 0x111111);
 
-    const icon = new IconEntity(this.scene, 38, 39, {
+    const icon = new IconEntity(this.scene, 32, 30, {
       sheet: 'achievements',
       icon: ACHIEVEMENT_ICON_BY_ID[achievement.id] ?? 'firstCheckeredFlag',
     });
-    icon.setDisplaySize(52, 52);
-    icon.setAlpha(achievement.unlocked || achievement.checked ? 1 : 0.35);
+    icon.setDisplaySize(42, 42);
+    icon.setAlpha(alpha);
+    if (achievement.unlocked) {
+      icon.setTint(0xf2d27a);
+    }
 
-    const title = this.scene.add.text(76, 12, achievement.title, {
+    const title = this.scene.add.text(64, 8, achievement.title, {
       color,
       fontFamily: 'Arial, sans-serif',
-      fontSize: '15px',
+      fontSize: '13px',
       fontStyle: 'bold',
       wordWrap: { width: 190 },
     });
 
-    const description = this.scene.add.text(76, 36, achievement.description, {
+    const description = this.scene.add.text(64, 28, achievement.description, {
       color: '#444444',
       fontFamily: 'Arial, sans-serif',
-      fontSize: '11px',
-      wordWrap: { width: 210 },
+      fontSize: '10px',
+      wordWrap: { width: 218 },
     });
 
-    const category = this.scene.add.text(286, 18, achievement.category.toUpperCase(), {
+    const category = this.scene.add.text(320, 30, achievement.category.toUpperCase(), {
       color,
       fontFamily: 'Arial, sans-serif',
       fontSize: '10px',
@@ -64,17 +60,9 @@ export class AchievementRowEntity extends GameObjects.Container {
       padding: { left: 5, right: 5, top: 2, bottom: 2 },
     }).setOrigin(0.5);
 
-    const statusMarker = new IconEntity(this.scene, 306, 52, { sheet: 'icons', icon: statusIcon });
-    statusMarker.setDisplaySize(18, 18);
-    statusMarker.setAlpha(achievement.unlocked || achievement.checked ? 1 : 0.45);
+    panel.setAlpha(achievement.unlocked ? 1 : 0.65);
+    category.setAlpha(alpha);
 
-    const status = this.scene.add.text(324, 52, statusLabel, {
-      color,
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '11px',
-      fontStyle: achievement.unlocked ? 'bold' : 'normal',
-    }).setOrigin(0, 0.5);
-
-    this.add([panel, icon, title, description, category, statusMarker, status]);
+    this.add([panel, icon, title, description, category]);
   }
 }

@@ -1,5 +1,5 @@
 import { Scene } from 'phaser';
-import { CAR_DRAFT_URL, SCRAPYARD_URL, SPRITESHEET_FRAME_SIZE, SPRITESHEET_KEYS, SPRITESHEET_URLS, WORKSHOP_URL } from '@/game/assets/spritesheets';
+import { ACHIEVEMENTS_SCENE_URL, CAR_DRAFT_URL, SCRAPYARD_URL, SPRITESHEET_FRAME_SIZE, SPRITESHEET_KEYS, SPRITESHEET_URLS, WORKSHOP_URL } from '@/game/assets/spritesheets';
 
 export class BootloaderScene extends Scene {
   // constructor
@@ -29,6 +29,7 @@ export class BootloaderScene extends Scene {
     this.load.image('car-draft', CAR_DRAFT_URL);
     this.load.image('scrapyard', SCRAPYARD_URL);
     this.load.image('workshop', WORKSHOP_URL);
+    this.load.image('achievements-scene', ACHIEVEMENTS_SCENE_URL);
   }
 
   create(): void {
