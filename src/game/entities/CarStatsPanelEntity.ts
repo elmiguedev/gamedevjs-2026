@@ -1,12 +1,13 @@
 import { GameObjects, Scene } from 'phaser';
 import type { CarAttributes } from '@/core/domain/Car';
+import { ProgressBarEntity } from '@/game/entities/ProgressBarEntity';
 
 const FONT_FAMILY = 'Barlow Condensed, Arial, sans-serif';
 
 type StatView = {
   key: keyof CarAttributes;
   value: GameObjects.Text;
-  fill: GameObjects.Rectangle;
+  progress: ProgressBarEntity;
 };
 
 export class CarStatsPanelEntity extends GameObjects.Container {
@@ -61,12 +62,10 @@ export class CarStatsPanelEntity extends GameObjects.Container {
         fontSize: '14px',
         fontStyle: 'bold',
       }).setOrigin(0, 0.5);
-      const track = this.scene.add.rectangle(x, 78, 76, 4, 0xffffff).setOrigin(0, 0.5);
-      track.setStrokeStyle(1, 0x999999);
-      const fill = this.scene.add.rectangle(x, 78, 0, 4, 0x111111).setOrigin(0, 0.5);
+      const progress = new ProgressBarEntity(this.scene, x, 78, 76, 4);
 
-      this.statViews.push({ key: stat.key, value, fill });
-      this.add([label, value, track, fill]);
+      this.statViews.push({ key: stat.key, value, progress });
+      this.add([label, value, progress]);
     });
   }
 
@@ -74,7 +73,7 @@ export class CarStatsPanelEntity extends GameObjects.Container {
     for (const view of this.statViews) {
       const value = attributes[view.key];
       view.value.setText(String(value));
-      view.fill.width = Math.min(76, Math.max(0, value * 15));
+      view.progress.setProgress(value / 5);
     }
   }
 }

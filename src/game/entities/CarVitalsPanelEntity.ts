@@ -1,14 +1,15 @@
 import { GameObjects, Scene } from 'phaser';
 import type { Car } from '@/core/domain/Car';
 import { IconEntity } from '@/game/entities/IconEntity';
+import { ProgressBarEntity } from '@/game/entities/ProgressBarEntity';
 
 const FONT_FAMILY = 'Barlow Condensed, Arial, sans-serif';
 
 export class CarVitalsPanelEntity extends GameObjects.Container {
   private damageText!: GameObjects.Text;
-  private damageFill!: GameObjects.Rectangle;
+  private damageProgress!: ProgressBarEntity;
   private fuelText!: GameObjects.Text;
-  private fuelFill!: GameObjects.Rectangle;
+  private fuelProgress!: ProgressBarEntity;
 
   constructor(scene: Scene, x: number, y: number, width: number, height: number, car: Car) {
     super(scene, x, y);
@@ -43,11 +44,9 @@ export class CarVitalsPanelEntity extends GameObjects.Container {
       fontSize: '14px',
       fontStyle: 'bold',
     }).setOrigin(0, 0.5);
-    const track = this.scene.add.rectangle(44, 64, 160, 5, 0xffffff).setOrigin(0, 0.5);
-    track.setStrokeStyle(1, 0x999999);
-    this.damageFill = this.scene.add.rectangle(44, 64, 0, 5, 0x111111).setOrigin(0, 0.5);
+    this.damageProgress = new ProgressBarEntity(this.scene, 44, 64, 160, 5);
 
-    this.add([icon, title, this.damageText, track, this.damageFill]);
+    this.add([icon, title, this.damageText, this.damageProgress]);
   }
 
   private createFuelBlock(width: number): void {
@@ -66,20 +65,18 @@ export class CarVitalsPanelEntity extends GameObjects.Container {
       fontSize: '14px',
       fontStyle: 'bold',
     }).setOrigin(0, 0.5);
-    const track = this.scene.add.rectangle(x + 24, 64, 160, 5, 0xffffff).setOrigin(0, 0.5);
-    track.setStrokeStyle(1, 0x999999);
-    this.fuelFill = this.scene.add.rectangle(x + 24, 64, 0, 5, 0x111111).setOrigin(0, 0.5);
+    this.fuelProgress = new ProgressBarEntity(this.scene, x + 24, 64, 160, 5);
 
-    this.add([icon, title, this.fuelText, track, this.fuelFill]);
+    this.add([icon, title, this.fuelText, this.fuelProgress]);
   }
 
   refresh(car: Car): void {
     const damage = this.getGeneralDamage(car);
     this.damageText.setText(`${damage}%`);
-    this.damageFill.width = Math.min(160, Math.max(0, damage * 1.6));
+    this.damageProgress.setProgress(damage / 100);
 
     this.fuelText.setText(`${car.fuel} / ${car.maxFuel}`);
-    this.fuelFill.width = car.maxFuel <= 0 ? 0 : Math.min(160, Math.max(0, (car.fuel / car.maxFuel) * 160));
+    this.fuelProgress.setProgress(car.maxFuel <= 0 ? 0 : car.fuel / car.maxFuel);
   }
 
   private getGeneralDamage(car: Car): number {

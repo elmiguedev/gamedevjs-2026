@@ -2,12 +2,12 @@ import { GameObjects, Scene, type Time } from 'phaser';
 import { MenuEntity } from '@/game/entities/MenuEntity';
 import { ResourceHud } from '@/game/huds/ResourceHud';
 import { ActionProvider } from '@/game/providers/ActionProvider';
-import { ConfirmationEntity } from '@/game/entities/ConfirmationEntity';
 import { ToastEntity } from '@/game/entities/ToastEntity';
 import { TitleEntity } from '@/game/entities/TitleEntity';
 import { ButtonEntity } from '@/game/entities/ButtonEntity';
 import { IconEntity } from '@/game/entities/IconEntity';
 import { PaginationEntity } from '@/game/entities/PaginationEntity';
+import { ProgressBarEntity } from '@/game/entities/ProgressBarEntity';
 import { TabPanelEntity } from '@/game/entities/TabPanelEntity';
 import { PART_ICON_BY_PART_ID, SLOT_ICON_BY_TYPE, type PartsIconName, type UiIconName } from '@/game/assets/spritesheets';
 import type { GameState } from '@/core/domain/GameState';
@@ -32,7 +32,6 @@ export class InventoryScene extends Scene {
   private resourceHud!: ResourceHud;
   private unsubscribeInventory?: () => void;
   private unsubscribeState?: () => void;
-  private confirmation?: ConfirmationEntity;
   private toast?: ToastEntity;
   private latestState?: GameState;
   private refreshEvent?: Time.TimerEvent;
@@ -95,7 +94,6 @@ export class InventoryScene extends Scene {
       this.unsubscribeInventory?.();
       this.unsubscribeState?.();
       this.clearContent();
-      this.confirmation?.destroy();
       this.toast?.destroy();
     });
   }
@@ -232,10 +230,8 @@ export class InventoryScene extends Scene {
       }).setOrigin(0.5);
 
       const progress = ready ? 1 : this.getCraftProgress(active);
-      const track = this.add.rectangle(292, 10, 76, 4, 0xffffff).setOrigin(0, 0.5);
-      track.setStrokeStyle(1, 0x999999);
-      const fill = this.add.rectangle(292, 10, 76 * progress, 4, 0x111111).setOrigin(0, 0.5);
-      row.add([statusText, track, fill]);
+      const progressBar = new ProgressBarEntity(this, 292, 10, 76, 4, progress);
+      row.add([statusText, progressBar]);
     }
 
     return { container: row, craftButton };
@@ -383,41 +379,8 @@ export class InventoryScene extends Scene {
     this.contentObjects = [];
   }
 
-  private async requestEquip(itemId: string): Promise<void> {
-    const item = ActionProvider.getCarPartInventoryRepository().findById(itemId);
-    if (!item) {
-      return;
-    }
-
-    const state = this.latestState ?? await ActionProvider.getState();
-    const occupiedItemId = state.car.getEquippedItemIdForType(item.part.type);
-
-    if (occupiedItemId && occupiedItemId !== itemId) {
-      this.openConfirm(item, occupiedItemId);
-      return;
-    }
-
+  private requestEquip(itemId: string): void {
     void ActionProvider.equipCarPart(itemId);
-  }
-
-  private openConfirm(item: CarPartInventoryItem, occupiedItemId: string): void {
-    this.confirmation?.destroy();
-
-    const currentItem = ActionProvider.getCarPartInventoryRepository().findById(occupiedItemId);
-    const currentName = currentItem?.part.name ?? 'current part';
-
-    this.confirmation = new ConfirmationEntity(
-      this,
-      'Replace equipped part?',
-      `Equip ${item.part.name} and replace ${currentName}?`,
-      () => {
-        void ActionProvider.equipCarPart(item.id);
-        this.confirmation = undefined;
-      },
-      () => {
-        this.confirmation = undefined;
-      },
-    );
   }
 
   private getPartIcon(part: CarPart): { sheet: 'icons'; icon: UiIconName } | { sheet: 'parts'; icon: PartsIconName } {
