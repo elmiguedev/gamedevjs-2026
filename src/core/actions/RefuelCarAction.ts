@@ -12,7 +12,7 @@ export class RefuelCarAction implements Action<{ amount?: number }, GameState> {
   async execute(input: { amount?: number } = {}): Promise<GameState> {
     const amount = input.amount ?? Number.POSITIVE_INFINITY;
 
-    return this.gameStateService.update((current) => {
+    const state = await this.gameStateService.update((current) => {
       const needed = Math.max(0, current.car.maxFuel - current.car.fuel);
       const refuelAmount = Math.min(current.fuel, needed, amount);
 
@@ -25,5 +25,7 @@ export class RefuelCarAction implements Action<{ amount?: number }, GameState> {
     });
 
     this.achievementChecker.check();
+
+    return state;
   }
 }

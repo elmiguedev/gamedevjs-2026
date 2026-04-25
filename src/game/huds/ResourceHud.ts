@@ -127,7 +127,7 @@ export class ResourceHud {
     this.levelXpText.setText(`${mechanic.xp} / ${xpToNext} XP`);
     this.scrapText.setText(String(state.scrap));
     this.cashText.setText(String(state.cash));
-    this.fuelText.setText(`${state.car.fuel} / ${state.car.maxFuel}`);
+    this.fuelText.setText(String(state.fuel));
   }
 
   private suscribeGameState(): void {
