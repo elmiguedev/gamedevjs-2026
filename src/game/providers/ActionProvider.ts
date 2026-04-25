@@ -1,4 +1,5 @@
 import { CollectScrapAction } from '@/core/actions/CollectScrapAction';
+import { BuyFuelAction } from '@/core/actions/BuyFuelAction';
 import { ClaimCraftedPartAction } from '@/core/actions/ClaimCraftedPartAction';
 import { CraftCarPartAction } from '@/core/actions/CraftCarPartAction';
 import { EquipCarPartAction } from '@/core/actions/EquipCarPartAction';
@@ -41,6 +42,7 @@ export class ActionProvider {
   private readonly raceRepository: RaceRepository;
   private readonly mechanicProgressRepository: MechanicProgressRepository;
   private readonly collectScrapAction: CollectScrapAction;
+  private readonly buyFuelAction: BuyFuelAction;
   private readonly craftCarPartAction: CraftCarPartAction;
   private readonly claimCraftedPartAction: ClaimCraftedPartAction;
   private readonly equipCarPartAction: EquipCarPartAction;
@@ -69,9 +71,10 @@ export class ActionProvider {
       scrapCollected: 0,
       scrapCollectAvailableAt: 0,
       cash: 0,
-      fuel: 100,
+      fuel: 0,
       craftedToolIds: [],
       robotScrapCollectedAt: 0,
+      oilWellFuelCollectedAt: 0,
       racePoints: 0,
       partsCrafted: 0,
       craftedWheelParts: 0,
@@ -133,6 +136,7 @@ export class ActionProvider {
     this.achievementChecker.check();
 
     this.collectScrapAction = new CollectScrapAction(this.gameStateService, this.achievementChecker);
+    this.buyFuelAction = new BuyFuelAction(this.gameStateService);
     this.craftCarPartAction = new CraftCarPartAction(
       this.gameStateService,
       this.carPartRepository,
@@ -153,6 +157,10 @@ export class ActionProvider {
 
   static collectScrap(): Promise<GameState> {
     return ActionProvider.instance.collectScrapAction.execute();
+  }
+
+  static buyFuel(): Promise<GameState> {
+    return ActionProvider.instance.buyFuelAction.execute();
   }
 
   static getState(): Promise<GameState> {

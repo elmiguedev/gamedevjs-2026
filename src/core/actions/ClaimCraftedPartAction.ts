@@ -26,6 +26,7 @@ export class ClaimCraftedPartAction implements Action<void, CarPart | null> {
         ...current,
         craftedToolIds: current.craftedToolIds.includes(part.id) ? current.craftedToolIds : [...current.craftedToolIds, part.id],
         robotScrapCollectedAt: part.effect.type === 'passiveScrap' ? Date.now() : current.robotScrapCollectedAt,
+        oilWellFuelCollectedAt: part.effect.type === 'passiveFuel' ? Date.now() : current.oilWellFuelCollectedAt,
       }));
       this.achievementChecker.check();
       return null;

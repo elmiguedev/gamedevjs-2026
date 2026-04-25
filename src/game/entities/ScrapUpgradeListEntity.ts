@@ -67,6 +67,10 @@ export class ScrapUpgradeListEntity extends GameObjects.Container {
       return 'collectScrap';
     }
 
+    if (tool.id === 'pozo-petrolero') {
+      return 'fuel';
+    }
+
     return 'scrapYardCrafting';
   }
 
@@ -77,6 +81,10 @@ export class ScrapUpgradeListEntity extends GameObjects.Container {
 
     if (tool.effect.type === 'collectCooldown') {
       return `${tool.effect.seconds}s cooldown`;
+    }
+
+    if (tool.effect.type === 'passiveFuel') {
+      return `+${tool.effect.amount} fuel/${tool.effect.intervalSeconds}s`;
     }
 
     return `+${tool.effect.amount}/${tool.effect.intervalSeconds}s`;

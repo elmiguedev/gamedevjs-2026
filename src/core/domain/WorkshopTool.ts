@@ -1,7 +1,8 @@
 export type WorkshopToolEffect =
   | { type: 'scrapMultiplier'; multiplier: number }
   | { type: 'collectCooldown'; seconds: number }
-  | { type: 'passiveScrap'; amount: number; intervalSeconds: number };
+  | { type: 'passiveScrap'; amount: number; intervalSeconds: number }
+  | { type: 'passiveFuel'; amount: number; intervalSeconds: number };
 
 export class WorkshopTool {
   constructor(

@@ -152,8 +152,7 @@ export class InventoryScene extends Scene {
     const progress = ActionProvider.getMechanicProgressRepository().get();
     const craftingStatus = ActionProvider.getCraftingStatus();
     const craftBusy = craftingStatus.active !== null || craftingStatus.ready !== null;
-    const availableParts = [...parts, ...tools]
-      .filter((part) => progress.level >= part.requiredLevel);
+    const availableParts = [...parts, ...tools];
 
     const maxPage = this.getMaxPage(availableParts.length);
     this.craftPage = Math.min(this.craftPage, maxPage);
@@ -169,8 +168,9 @@ export class InventoryScene extends Scene {
     let y = LIST_Y + 42;
     pageParts.forEach((part) => {
       const canCraft = part.scrapCost <= state.scrap && part.cashCost <= state.cash;
+      const levelLocked = progress.level < part.requiredLevel;
       const alreadyOwned = isWorkshopTool(part) && state.craftedToolIds.includes(part.id);
-      const row = this.createCraftRow(y, part, craftBusy || !canCraft || alreadyOwned, craftingStatus, alreadyOwned);
+      const row = this.createCraftRow(y, part, craftBusy || !canCraft || alreadyOwned || levelLocked, craftingStatus, alreadyOwned, levelLocked);
       this.craftRows.push(row);
       this.contentObjects.push(row.container);
       y += 48;
@@ -194,7 +194,7 @@ export class InventoryScene extends Scene {
     this.handleReadyCraft(craftingStatus);
   }
 
-  private createCraftRow(y: number, part: CraftableItem, disabled: boolean, craftingStatus: CraftingStatus, alreadyOwned = false): WorkshopRow {
+  private createCraftRow(y: number, part: CraftableItem, disabled: boolean, craftingStatus: CraftingStatus, alreadyOwned = false, levelLocked = false): WorkshopRow {
     const row = this.add.container(CONTENT_X + 18, y);
     const panel = this.add.rectangle(0, 0, CONTENT_WIDTH - 16, 42, 0xffffff).setOrigin(0, 0.5);
     panel.setStrokeStyle(1, 0xcccccc);
@@ -208,15 +208,15 @@ export class InventoryScene extends Scene {
       fontSize: '14px',
       fontStyle: 'bold',
     }).setOrigin(0, 0.5);
-    const cost = this.add.text(46, 10, alreadyOwned ? 'MEJORA ACTIVA' : `Scrap ${part.scrapCost} | Cash ${part.cashCost} | ${part.craftTimeSeconds}s`, {
-      color: '#444444',
+    const cost = this.add.text(46, 10, this.formatCraftDetail(part, alreadyOwned, levelLocked), {
+      color: levelLocked ? '#9ca3af' : '#444444',
       fontFamily: 'Barlow Condensed, Arial, sans-serif',
       fontSize: '12px',
     }).setOrigin(0, 0.5);
 
     const active = craftingStatus.active?.part.id === part.id ? craftingStatus.active : null;
     const ready = craftingStatus.ready?.id === part.id;
-    const craftButton = new ButtonEntity(this, 330, 0, 68, 28, alreadyOwned ? 'Activa' : this.getCraftActionLabel(part, craftingStatus), () => {
+    const craftButton = new ButtonEntity(this, 330, 0, 68, 28, this.getCraftButtonLabel(part, craftingStatus, alreadyOwned, levelLocked), () => {
       void ActionProvider.craftCarPart(part.id)
         .then(() => this.renderActiveTab())
         .catch(() => this.renderActiveTab());
@@ -251,6 +251,30 @@ export class InventoryScene extends Scene {
     }
 
     return 'Crear';
+  }
+
+  private getCraftButtonLabel(part: CraftableItem, status: CraftingStatus, alreadyOwned: boolean, levelLocked: boolean): string {
+    if (alreadyOwned) {
+      return 'Activa';
+    }
+
+    if (levelLocked) {
+      return `LV ${part.requiredLevel}`;
+    }
+
+    return this.getCraftActionLabel(part, status);
+  }
+
+  private formatCraftDetail(part: CraftableItem, alreadyOwned: boolean, levelLocked: boolean): string {
+    if (alreadyOwned) {
+      return 'MEJORA ACTIVA';
+    }
+
+    if (levelLocked) {
+      return `Requiere nivel ${part.requiredLevel}`;
+    }
+
+    return `Scrap ${part.scrapCost} | Cash ${part.cashCost} | ${part.craftTimeSeconds}s`;
   }
 
   private formatActiveCraft(active: NonNullable<CraftingStatus['active']> | null): string {
@@ -402,6 +426,10 @@ export class InventoryScene extends Scene {
 
     if (tool.id === 'iman-poderoso') {
       return 'collectScrap';
+    }
+
+    if (tool.id === 'pozo-petrolero') {
+      return 'fuel';
     }
 
     return 'scrapYardCrafting';

@@ -8,12 +8,15 @@ import { ToastEntity } from '@/game/entities/ToastEntity';
 import { ResourceHud } from '@/game/huds/ResourceHud';
 import { ActionProvider } from '@/game/providers/ActionProvider';
 import type { GameState } from '@/core/domain/GameState';
+import { FUEL_PURCHASE_AMOUNT, FUEL_PURCHASE_CASH_COST } from '@/core/utils/Constants';
 
 export class ScrapScene extends Scene {
   private resourceHud!: ResourceHud;
   private toast?: ToastEntity;
   private collectButton?: ButtonEntity;
   private collectIcon?: IconEntity<'icons'>;
+  private buyFuelButton?: ButtonEntity;
+  private buyFuelIcon?: IconEntity<'icons'>;
   private upgradeList?: ScrapUpgradeListEntity;
   private latestState?: GameState;
   private unsubscribeState?: () => void;
@@ -33,7 +36,7 @@ export class ScrapScene extends Scene {
     const scrapyard = this.add.image(this.scale.width / 2, 280, 'scrapyard');
     scrapyard.setDisplaySize(400, 266);
 
-    this.collectButton = new ButtonEntity(this, this.scale.width / 2, 468, 170, 42, 'Collect', () => {
+    this.collectButton = new ButtonEntity(this, this.scale.width / 2, 468, 170, 42, 'Collect scrap', () => {
       void ActionProvider.collectScrap().then((state) => {
         this.latestState = state;
         this.refreshCollectButton();
@@ -42,7 +45,16 @@ export class ScrapScene extends Scene {
     this.collectIcon = new IconEntity(this, this.scale.width / 2 - 60, 468, { sheet: 'icons', icon: 'collectScrap' });
     this.collectIcon.setDisplaySize(24, 24);
     this.collectIcon.setDepth(1002);
-    this.upgradeList = new ScrapUpgradeListEntity(this, 28, 526, 424);
+    this.buyFuelButton = new ButtonEntity(this, this.scale.width / 2, 520, 190, 42, `Buy ${FUEL_PURCHASE_AMOUNT} fuel`, () => {
+      void ActionProvider.buyFuel().then((state) => {
+        this.latestState = state;
+        this.refreshFuelButton();
+      });
+    });
+    this.buyFuelIcon = new IconEntity(this, this.scale.width / 2 - 82, 520, { sheet: 'icons', icon: 'fuel' });
+    this.buyFuelIcon.setDisplaySize(24, 24);
+    this.buyFuelIcon.setDepth(1002);
+    this.upgradeList = new ScrapUpgradeListEntity(this, 28, 564, 424);
 
     this.unsubscribeState = ActionProvider.subscribeState((state) => {
       this.latestState = state;
@@ -61,6 +73,8 @@ export class ScrapScene extends Scene {
       this.cooldownTimer?.remove(false);
       this.collectButton?.destroy();
       this.collectIcon?.destroy();
+      this.buyFuelButton?.destroy();
+      this.buyFuelIcon?.destroy();
       this.upgradeList?.destroy();
       this.toast?.destroy();
     });
@@ -79,9 +93,21 @@ export class ScrapScene extends Scene {
     const disabled = remainingSeconds > 0;
 
     this.collectButton.setDisabled(disabled);
-    this.collectButton.setLabel(disabled ? `Collecting ${remainingSeconds}s` : 'Collect');
+    this.collectButton.setLabel(disabled ? `Collecting ${remainingSeconds}s` : 'Collect scrap');
     this.collectIcon.setAlpha(disabled ? 0.45 : 1);
+    this.refreshFuelButton();
     this.refreshUpgradeList();
+  }
+
+  private refreshFuelButton(): void {
+    if (!this.latestState || !this.buyFuelButton || !this.buyFuelIcon) {
+      return;
+    }
+
+    const disabled = this.latestState.cash < FUEL_PURCHASE_CASH_COST;
+    this.buyFuelButton.setDisabled(disabled);
+    this.buyFuelButton.setLabel(`Buy ${FUEL_PURCHASE_AMOUNT} fuel - ${FUEL_PURCHASE_CASH_COST} cash`);
+    this.buyFuelIcon.setAlpha(disabled ? 0.45 : 1);
   }
 
   private refreshUpgradeList(): void {

@@ -25,8 +25,9 @@ export class ButtonEntity extends GameObjects.Container {
     this.background = this.scene.add.rectangle(0, 0, width, height, 0x111111);
     this.labelText = this.scene.add.text(0, 0, label, {
       color: '#ffffff',
-      fontFamily: 'Arial, sans-serif',
+      fontFamily: 'Barlow Condensed, Arial, sans-serif',
       fontSize: '14px',
+      fontStyle: 'bold',
     }).setOrigin(0.5);
 
     this.add([this.background, this.labelText]);
