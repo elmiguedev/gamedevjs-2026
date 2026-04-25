@@ -7,10 +7,13 @@ import { ToastEntity } from '@/game/entities/ToastEntity';
 import { TitleEntity } from '@/game/entities/TitleEntity';
 import { ButtonEntity } from '@/game/entities/ButtonEntity';
 import { IconEntity } from '@/game/entities/IconEntity';
+import { PaginationEntity } from '@/game/entities/PaginationEntity';
+import { TabPanelEntity } from '@/game/entities/TabPanelEntity';
 import { PART_ICON_BY_PART_ID, SLOT_ICON_BY_TYPE, type PartsIconName, type UiIconName } from '@/game/assets/spritesheets';
 import type { GameState } from '@/core/domain/GameState';
 import type { CarPartInventoryItem } from '@/core/domain/CarPartInventory';
 import type { CarPart } from '@/core/domain/CarPart';
+import type { CraftingStatus } from '@/core/domain/CarCraftingRepository';
 
 type WorkshopTab = 'craft' | 'inventory';
 
@@ -21,9 +24,9 @@ type WorkshopRow = {
 
 const CONTENT_X = 28;
 const CONTENT_WIDTH = 424;
-const PANEL_Y = 232;
-const PANEL_HEIGHT = 344;
-const INVENTORY_ITEMS_PER_PAGE = 4;
+const LIST_Y = 356;
+const LIST_HEIGHT = 190;
+const ITEMS_PER_PAGE = 3;
 
 export class InventoryScene extends Scene {
   private resourceHud!: ResourceHud;
@@ -37,9 +40,10 @@ export class InventoryScene extends Scene {
   private inventoryItems: CarPartInventoryItem[] = [];
   private contentObjects: GameObjects.GameObject[] = [];
   private craftRows: WorkshopRow[] = [];
-  private craftingText?: GameObjects.Text;
   private inventoryPage = 0;
+  private craftPage = 0;
   private autoClaiming = false;
+  private tabs?: TabPanelEntity<WorkshopTab>;
 
   constructor() {
     super('InventoryScene');
@@ -56,6 +60,7 @@ export class InventoryScene extends Scene {
     this.toast = new ToastEntity(this, this.scale.width / 2, 70);
 
     this.createTitle();
+    this.createWorkshopImage();
     this.createTabs();
 
     this.unsubscribeInventory = ActionProvider.getCarPartInventoryRepository().subscribe((items) => {
@@ -75,7 +80,11 @@ export class InventoryScene extends Scene {
     this.refreshEvent = this.time.addEvent({
       delay: 1000,
       loop: true,
-      callback: () => this.updateCraftingStatus(),
+      callback: () => {
+        if (this.activeTab === 'craft') {
+          this.renderActiveTab();
+        }
+      },
     });
 
     new MenuEntity(this);
@@ -95,38 +104,26 @@ export class InventoryScene extends Scene {
     new TitleEntity(this, 40, 88, 'TALLER', 'CREA. MEJORA. GANA.');
   }
 
-  private createTabs(): void {
-    this.createTabButton(116, PANEL_Y + 38, 'Crear', 'craft', 'craft');
-    this.createTabButton(300, PANEL_Y + 38, 'Inventario', 'inventory', 'inventory');
-
-    const divider = this.add.rectangle(CONTENT_X, PANEL_Y + 76, CONTENT_WIDTH, 1, 0x111111).setOrigin(0, 0.5);
-    divider.setAlpha(0.8);
+  private createWorkshopImage(): void {
+    const workshop = this.add.image(325, 178, 'workshop');
+    workshop.setDisplaySize(270, 190);
   }
 
-  private createTabButton(x: number, y: number, label: string, tab: WorkshopTab, iconName: UiIconName): void {
-    const active = this.activeTab === tab;
-    const bg = this.add.rectangle(x, y, 160, 48, active ? 0x111111 : 0xffffff).setOrigin(0.5);
-    bg.setStrokeStyle(1, 0x111111);
-    const icon = new IconEntity(this, x - 52, y, { sheet: 'icons', icon: iconName });
-    icon.setDisplaySize(18, 18);
-    icon.setTint(active ? 0xffffff : 0x111111);
-    const text = this.add.text(x - 30, y, label, {
-      color: active ? '#ffffff' : '#111111',
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '14px',
-      fontStyle: 'bold',
-    }).setOrigin(0, 0.5);
-
-    bg.setInteractive({ useHandCursor: true });
-    bg.on('pointerdown', () => {
+  private createTabs(): void {
+    this.tabs = new TabPanelEntity(this, CONTENT_X, 292, CONTENT_WIDTH, 44, this.activeTab, [
+      { key: 'craft', label: 'MESA DE TRABAJO', icon: 'repair' },
+      { key: 'inventory', label: 'INVENTARIO', icon: 'inventory' },
+    ], (tab) => {
       this.activeTab = tab;
       this.inventoryPage = 0;
-      this.scene.restart();
+      this.craftPage = 0;
+      this.renderActiveTab();
     });
   }
 
   private renderActiveTab(): void {
     this.clearContent();
+    this.tabs?.refresh(this.activeTab);
 
     if (this.activeTab === 'inventory') {
       this.renderInventory();
@@ -142,86 +139,153 @@ export class InventoryScene extends Scene {
       return;
     }
 
-    const description = this.add.text(CONTENT_X + 18, PANEL_Y + 96, 'Crea piezas nuevas para mejorar tu auto.', {
+    const title = this.add.text(CONTENT_X + 8, LIST_Y, 'MESA DE TRABAJO', {
       color: '#111111',
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '13px',
-      wordWrap: { width: CONTENT_WIDTH - 36 },
+      fontFamily: 'Barlow Condensed, Arial, sans-serif',
+      fontSize: '16px',
+      fontStyle: 'bold',
     });
-    this.contentObjects.push(description);
+    this.contentObjects.push(title);
 
     const parts = ActionProvider.getCarPartRepository().findAll();
     const progress = ActionProvider.getMechanicProgressRepository().get();
-    const craftBusy = ActionProvider.getCraftingStatus().active !== null;
+    const craftingStatus = ActionProvider.getCraftingStatus();
+    const craftBusy = craftingStatus.active !== null || craftingStatus.ready !== null;
     const availableParts = parts
-      .filter((part) => progress.level >= part.requiredLevel)
-      .filter((part) => part.scrapCost <= state.scrap && part.cashCost <= state.cash)
-      .slice(0, 4);
+      .filter((part) => progress.level >= part.requiredLevel);
 
-    let y = PANEL_Y + 142;
-    availableParts.forEach((part) => {
-      const row = this.createCraftRow(y, part, craftBusy);
+    const maxPage = this.getMaxPage(availableParts.length);
+    this.craftPage = Math.min(this.craftPage, maxPage);
+    const activePartId = craftingStatus.active?.part.id ?? craftingStatus.ready?.id;
+    const activePartIndex = activePartId ? availableParts.findIndex((part) => part.id === activePartId) : -1;
+    if (activePartIndex >= 0) {
+      this.craftPage = Math.floor(activePartIndex / ITEMS_PER_PAGE);
+    }
+
+    const start = this.craftPage * ITEMS_PER_PAGE;
+    const pageParts = availableParts.slice(start, start + ITEMS_PER_PAGE);
+
+    let y = LIST_Y + 42;
+    pageParts.forEach((part) => {
+      const canCraft = part.scrapCost <= state.scrap && part.cashCost <= state.cash;
+      const row = this.createCraftRow(y, part, craftBusy || !canCraft, craftingStatus);
       this.craftRows.push(row);
       this.contentObjects.push(row.container);
-      y += 50;
+      y += 48;
     });
 
-    if (!availableParts.length) {
-      const empty = this.add.text(CONTENT_X + 18, y, 'No hay piezas disponibles con tus recursos actuales.', {
+    if (!pageParts.length) {
+      const empty = this.add.text(CONTENT_X + 8, y, 'No hay piezas disponibles para tu nivel actual.', {
         color: '#444444',
-        fontFamily: 'Arial, sans-serif',
+        fontFamily: 'Barlow Condensed, Arial, sans-serif',
         fontSize: '13px',
         wordWrap: { width: CONTENT_WIDTH - 36 },
       });
       this.contentObjects.push(empty);
     }
 
-    this.updateCraftingStatus();
+    this.createPagination(maxPage, this.craftPage, (page) => {
+      this.craftPage = page;
+      this.renderActiveTab();
+    });
+
+    this.handleReadyCraft(craftingStatus);
   }
 
-  private createCraftRow(y: number, part: CarPart, craftBusy: boolean): WorkshopRow {
+  private createCraftRow(y: number, part: CarPart, disabled: boolean, craftingStatus: CraftingStatus): WorkshopRow {
     const row = this.add.container(CONTENT_X + 18, y);
-    const panel = this.add.rectangle(0, 0, CONTENT_WIDTH - 36, 42, 0xffffff).setOrigin(0, 0.5);
-    panel.setStrokeStyle(1, 0x111111);
+    const panel = this.add.rectangle(0, 0, CONTENT_WIDTH - 16, 42, 0xffffff).setOrigin(0, 0.5);
+    panel.setStrokeStyle(1, 0xcccccc);
 
     const icon = new IconEntity(this, 22, 0, this.getPartIcon(part));
     icon.setDisplaySize(26, 26);
 
     const name = this.add.text(46, -8, part.name, {
       color: '#111111',
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '12px',
+      fontFamily: 'Barlow Condensed, Arial, sans-serif',
+      fontSize: '14px',
       fontStyle: 'bold',
     }).setOrigin(0, 0.5);
     const cost = this.add.text(46, 10, `Scrap ${part.scrapCost} | Cash ${part.cashCost} | ${part.craftTimeSeconds}s`, {
       color: '#444444',
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '10px',
+      fontFamily: 'Barlow Condensed, Arial, sans-serif',
+      fontSize: '12px',
     }).setOrigin(0, 0.5);
 
-    const craftButton = new ButtonEntity(this, 338, 0, 68, 28, 'Craft', () => {
+    const active = craftingStatus.active?.part.id === part.id ? craftingStatus.active : null;
+    const ready = craftingStatus.ready?.id === part.id;
+    const craftButton = new ButtonEntity(this, 330, 0, 68, 28, this.getCraftActionLabel(part, craftingStatus), () => {
       void ActionProvider.craftCarPart(part.id)
-        .then(() => this.updateCraftingStatus())
-        .catch((error: unknown) => this.ensureCraftingText(PANEL_Y + PANEL_HEIGHT - 36, error instanceof Error ? error.message : 'Craft failed'));
-    }, craftBusy);
+        .then(() => this.renderActiveTab())
+        .catch(() => this.renderActiveTab());
+    }, disabled);
 
     row.add([panel, icon, name, cost, craftButton]);
+
+    if (active || ready) {
+      craftButton.setVisible(false);
+      const statusText = this.add.text(330, -8, ready ? 'LISTA' : this.formatActiveCraft(active), {
+        color: '#111111',
+        fontFamily: 'Barlow Condensed, Arial, sans-serif',
+        fontSize: '13px',
+        fontStyle: 'bold',
+      }).setOrigin(0.5);
+
+      const progress = ready ? 1 : this.getCraftProgress(active);
+      const track = this.add.rectangle(292, 10, 76, 4, 0xffffff).setOrigin(0, 0.5);
+      track.setStrokeStyle(1, 0x999999);
+      const fill = this.add.rectangle(292, 10, 76 * progress, 4, 0x111111).setOrigin(0, 0.5);
+      row.add([statusText, track, fill]);
+    }
+
     return { container: row, craftButton };
   }
 
+  private getCraftActionLabel(part: CarPart, status: CraftingStatus): string {
+    if (status.active?.part.id === part.id) {
+      return '...';
+    }
+
+    if (status.ready?.id === part.id) {
+      return 'Lista';
+    }
+
+    return 'Crear';
+  }
+
+  private formatActiveCraft(active: NonNullable<CraftingStatus['active']> | null): string {
+    if (!active) {
+      return '';
+    }
+
+    const elapsed = (Date.now() - active.startedAt) / 1000;
+    const progress = Math.floor(this.getCraftProgress(active) * 100);
+    const remaining = Math.max(0, Math.ceil(active.craftTimeSeconds - elapsed));
+    return `${progress}% / ${remaining}s`;
+  }
+
+  private getCraftProgress(active: NonNullable<CraftingStatus['active']> | null): number {
+    if (!active) {
+      return 0;
+    }
+
+    const elapsed = (Date.now() - active.startedAt) / 1000;
+    return Math.min(1, elapsed / active.craftTimeSeconds);
+  }
+
   private renderInventory(): void {
-    const description = this.add.text(CONTENT_X + 18, PANEL_Y + 96, 'Aquí están todas las piezas que has conseguido.', {
+    const title = this.add.text(CONTENT_X + 8, LIST_Y, `INVENTARIO (${this.inventoryItems.length})`, {
       color: '#111111',
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '13px',
-      wordWrap: { width: CONTENT_WIDTH - 36 },
+      fontFamily: 'Barlow Condensed, Arial, sans-serif',
+      fontSize: '16px',
+      fontStyle: 'bold',
     });
-    this.contentObjects.push(description);
+    this.contentObjects.push(title);
 
     if (!this.inventoryItems.length) {
-      const empty = this.add.text(CONTENT_X + 18, PANEL_Y + 148, 'Tu inventario está vacío. Crea piezas en el taller.', {
+      const empty = this.add.text(CONTENT_X + 8, LIST_Y + 42, 'Tu inventario está vacío. Crea piezas en el taller.', {
         color: '#444444',
-        fontFamily: 'Arial, sans-serif',
+        fontFamily: 'Barlow Condensed, Arial, sans-serif',
         fontSize: '13px',
         wordWrap: { width: CONTENT_WIDTH - 36 },
       });
@@ -229,45 +293,48 @@ export class InventoryScene extends Scene {
       return;
     }
 
-    const maxPage = this.getInventoryMaxPage();
+    const maxPage = this.getMaxPage(this.inventoryItems.length);
     this.inventoryPage = Math.min(this.inventoryPage, maxPage);
-    const start = this.inventoryPage * INVENTORY_ITEMS_PER_PAGE;
-    const pageItems = this.inventoryItems.slice(start, start + INVENTORY_ITEMS_PER_PAGE);
+    const start = this.inventoryPage * ITEMS_PER_PAGE;
+    const pageItems = this.inventoryItems.slice(start, start + ITEMS_PER_PAGE);
 
     pageItems.forEach((item, index) => {
-      const row = this.createInventoryRow(CONTENT_X + 18, PANEL_Y + 146 + index * 48, item);
+      const row = this.createInventoryRow(CONTENT_X + 8, LIST_Y + 42 + index * 48, item);
       this.contentObjects.push(row);
     });
 
-    this.createInventoryPagination(PANEL_Y + PANEL_HEIGHT - 28, maxPage);
+    this.createPagination(maxPage, this.inventoryPage, (page) => {
+      this.inventoryPage = page;
+      this.renderActiveTab();
+    });
   }
 
   private createInventoryRow(x: number, y: number, item: CarPartInventoryItem): GameObjects.Container {
     const card = this.add.container(x, y);
-    const panel = this.add.rectangle(0, 0, CONTENT_WIDTH - 36, 42, 0xffffff).setOrigin(0, 0.5);
-    panel.setStrokeStyle(1, 0x111111);
+    const panel = this.add.rectangle(0, 0, CONTENT_WIDTH - 16, 42, 0xffffff).setOrigin(0, 0.5);
+    panel.setStrokeStyle(1, 0xcccccc);
 
     const icon = new IconEntity(this, 22, 0, this.getPartIcon(item.part));
     icon.setDisplaySize(26, 26);
 
     const name = this.add.text(46, -8, item.part.name, {
       color: '#111111',
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '12px',
+      fontFamily: 'Barlow Condensed, Arial, sans-serif',
+      fontSize: '14px',
       fontStyle: 'bold',
       wordWrap: { width: 170 },
     }).setOrigin(0, 0.5);
 
-    const badge = this.add.text(46, 10, item.equipped ? 'EQUIPPED' : item.part.type.toUpperCase(), {
+    const badge = this.add.text(46, 10, item.equipped ? 'EQUIPADA' : item.part.type.toUpperCase(), {
       color: '#111111',
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '9px',
+      fontFamily: 'Barlow Condensed, Arial, sans-serif',
+      fontSize: '11px',
       fontStyle: 'bold',
       backgroundColor: item.equipped ? '#d1d5db' : '#f2d27a',
       padding: { left: 4, right: 4, top: 2, bottom: 2 },
     }).setOrigin(0, 0.5);
 
-    const equipButton = new ButtonEntity(this, 338, 0, 68, 28, item.equipped ? 'On' : 'Equip', () => {
+    const equipButton = new ButtonEntity(this, 330, 0, 68, 28, item.equipped ? 'On' : 'Equip', () => {
       void this.requestEquip(item.id);
     }, item.equipped);
 
@@ -275,52 +342,25 @@ export class InventoryScene extends Scene {
     return card;
   }
 
-  private createInventoryPagination(y: number, maxPage: number): void {
-    const pageText = this.add.text(this.scale.width / 2, y, `${this.inventoryPage + 1}/${maxPage + 1}`, {
-      color: '#111111',
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '14px',
-      fontStyle: 'bold',
-    }).setOrigin(0.5);
-
-    const prevButton = new ButtonEntity(this, this.scale.width / 2 - 82, y, 64, 28, 'Prev', () => {
-      this.inventoryPage = Math.max(0, this.inventoryPage - 1);
-      this.renderActiveTab();
-    }, this.inventoryPage <= 0);
-
-    const nextButton = new ButtonEntity(this, this.scale.width / 2 + 82, y, 64, 28, 'Next', () => {
-      this.inventoryPage = Math.min(maxPage, this.inventoryPage + 1);
-      this.renderActiveTab();
-    }, this.inventoryPage >= maxPage);
-
-    this.contentObjects.push(pageText, prevButton, nextButton);
+  private createPagination(maxPage: number, currentPage: number, onPage: (page: number) => void): void {
+    const pagination = new PaginationEntity(
+      this,
+      this.scale.width / 2,
+      LIST_Y + LIST_HEIGHT,
+      () => onPage(Math.max(0, currentPage - 1)),
+      () => onPage(Math.min(maxPage, currentPage + 1)),
+      onPage,
+    );
+    pagination.setPage(currentPage, maxPage + 1);
+    this.contentObjects.push(pagination);
   }
 
-  private getInventoryMaxPage(): number {
-    return Math.max(0, Math.ceil(this.inventoryItems.length / INVENTORY_ITEMS_PER_PAGE) - 1);
+  private getMaxPage(totalItems: number): number {
+    return Math.max(0, Math.ceil(totalItems / ITEMS_PER_PAGE) - 1);
   }
 
-  private updateCraftingStatus(): void {
-    if (this.activeTab !== 'craft') {
-      return;
-    }
-
-    const status = ActionProvider.getCraftingStatus();
-    const y = PANEL_Y + PANEL_HEIGHT - 36;
-
-    if (status.active) {
-      const elapsed = (Date.now() - status.active.startedAt) / 1000;
-      const progress = Math.min(100, Math.floor((elapsed / status.active.craftTimeSeconds) * 100));
-      const remaining = Math.max(0, Math.ceil(status.active.craftTimeSeconds - elapsed));
-      this.ensureCraftingText(y, `Crafting: ${status.active.part.name} ${progress}% (${remaining}s)`);
-      this.setCraftButtonsDisabled(true);
-      this.autoClaiming = false;
-      return;
-    }
-
+  private handleReadyCraft(status: CraftingStatus): void {
     if (status.ready) {
-      this.ensureCraftingText(y, `Ready: ${status.ready.name}`);
-      this.setCraftButtonsDisabled(true);
       if (!this.autoClaiming) {
         this.autoClaiming = true;
         void ActionProvider.claimCraftedPart().then(() => {
@@ -334,37 +374,13 @@ export class InventoryScene extends Scene {
       return;
     }
 
-    this.ensureCraftingText(y, 'Crafting: Idle');
-    this.setCraftButtonsDisabled(false);
     this.autoClaiming = false;
-  }
-
-  private setCraftButtonsDisabled(disabled: boolean): void {
-    this.craftRows.forEach((row) => row.craftButton.setDisabled(disabled));
-  }
-
-  private ensureCraftingText(y: number, value: string): void {
-    if (!this.craftingText || !this.craftingText.active) {
-      this.craftingText = this.add.text(CONTENT_X + 18, y, value, {
-        color: '#111111',
-        fontFamily: 'Arial, sans-serif',
-        fontSize: '14px',
-        fontStyle: 'bold',
-        wordWrap: { width: CONTENT_WIDTH - 36 },
-      });
-      this.contentObjects.push(this.craftingText);
-      return;
-    }
-
-    this.craftingText.setPosition(CONTENT_X + 18, y);
-    this.craftingText.setText(value);
   }
 
   private clearContent(): void {
     this.craftRows = [];
     this.contentObjects.forEach((object) => object.destroy());
     this.contentObjects = [];
-    this.craftingText = undefined;
   }
 
   private async requestEquip(itemId: string): Promise<void> {

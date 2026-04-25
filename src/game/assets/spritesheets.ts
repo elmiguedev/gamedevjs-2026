@@ -23,6 +23,7 @@ export const SPRITESHEET_URLS = {
 
 export const CAR_DRAFT_URL = new URL('../../../assets/img/sprites/car-draft.png', import.meta.url).href;
 export const SCRAPYARD_URL = new URL('../../../assets/img/sprites/scrapyard.png', import.meta.url).href;
+export const WORKSHOP_URL = new URL('../../../assets/img/sprites/workshop.png', import.meta.url).href;
 
 export const PARTS_ICON_INDEX = {
   chasisBase: 0,
