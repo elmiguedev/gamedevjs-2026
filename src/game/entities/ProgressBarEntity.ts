@@ -8,6 +8,7 @@ type ProgressBarOptions = {
 
 export class ProgressBarEntity extends GameObjects.Container {
   private readonly fill: GameObjects.Rectangle;
+  private readonly border: GameObjects.Rectangle;
 
   constructor(
     scene: Scene,
@@ -21,16 +22,17 @@ export class ProgressBarEntity extends GameObjects.Container {
     super(scene, x, y);
 
     const track = this.scene.add.rectangle(0, 0, barWidth, barHeight, options.trackColor ?? 0xffffff).setOrigin(0, 0.5);
-    track.setStrokeStyle(1, options.strokeColor ?? 0x999999);
-    this.fill = this.scene.add.rectangle(0, 0, 0, barHeight, options.fillColor ?? 0x111111).setOrigin(0, 0.5);
+    this.fill = this.scene.add.rectangle(1, 0, 0, Math.max(1, barHeight - 2), options.fillColor ?? 0x111111).setOrigin(0, 0.5);
+    this.border = this.scene.add.rectangle(0, 0, barWidth, barHeight).setOrigin(0, 0.5);
+    this.border.setStrokeStyle(1, options.strokeColor ?? 0x999999);
 
-    this.add([track, this.fill]);
+    this.add([track, this.fill, this.border]);
     this.scene.add.existing(this);
     this.setProgress(progress);
   }
 
   setProgress(progress: number): void {
     const normalized = Math.min(1, Math.max(0, progress));
-    this.fill.width = this.barWidth * normalized;
+    this.fill.width = Math.max(0, (this.barWidth - 2) * normalized);
   }
 }
