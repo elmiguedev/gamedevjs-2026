@@ -46,7 +46,7 @@ export interface PersistedCraftingJob {
 
 export interface PersistedRaceCompletion {
   raceId: string;
-  position: 1 | 2 | 3;
+  position: number;
   reward: number;
   points: number;
 }

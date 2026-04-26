@@ -27,9 +27,10 @@ export class ResolveRaceAction implements Action<void, RaceResolution | null> {
     const state = this.gameStateService.getState();
     const race = completed.race;
     const damage = this.randomBetween(race.damageMin, race.damageMax);
+    const fuel = this.randomBetween(race.fuelMin, race.fuelMax);
 
     state.car.applyRaceDamage({ rueda: damage, chasis: Math.max(0, Math.floor(damage / 2)) });
-    state.car.consumeFuel(state.car.fuel);
+    state.car.consumeFuel(fuel);
 
     if (state.car.hasBrokenPart()) {
       completed.reward = Math.max(0, Math.floor(completed.reward * 0.75));

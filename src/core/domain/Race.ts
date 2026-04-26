@@ -1,3 +1,5 @@
+import type { CarAttributes } from './Car';
+
 export type RaceCategory = 'street';
 
 export interface RaceRewards {
@@ -22,4 +24,6 @@ export interface Race extends RaceDamageRange {
   rewards: RaceRewards;
   points: RaceRewards;
   entryFee: number;
+  targetStats: Partial<CarAttributes>;
+  requiresCompleteCar: boolean;
 }

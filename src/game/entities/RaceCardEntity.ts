@@ -49,7 +49,7 @@ export class RaceCardEntity extends GameObjects.Container {
       fontStyle: 'bold',
     });
 
-    this.infoText = this.scene.add.text(84, 40, `Time ${race.durationSeconds}s | Prize ${race.rewards.first}/${race.rewards.second}/${race.rewards.third}\nFuel ${race.fuelMin}-${race.fuelMax} | Cooldown ${race.cooldownSeconds}s`, {
+    this.infoText = this.scene.add.text(84, 36, this.formatInfo(race), {
       color: '#444444',
       fontFamily: 'Arial, sans-serif',
       fontSize: '12px',
@@ -80,5 +80,17 @@ export class RaceCardEntity extends GameObjects.Container {
 
   getRaceId(): string {
     return this.race.id;
+  }
+
+  private formatInfo(race: Race): string {
+    const stats = race.targetStats;
+    const fee = race.entryFee > 0 ? ` | Fee ${race.entryFee}` : '';
+    const complete = race.requiresCompleteCar ? ' | Full car' : '';
+
+    return [
+      `Prize ${race.rewards.first}/${race.rewards.second}/${race.rewards.third}${fee}`,
+      `Target A${stats.acceleration ?? 0} S${stats.speed ?? 0} R${stats.resistance ?? 0} D${stats.direction ?? 0}${complete}`,
+      `Fuel ${race.fuelMin}-${race.fuelMax} | ${race.durationSeconds}s | CD ${race.cooldownSeconds}s`,
+    ];
   }
 }

@@ -13,7 +13,7 @@ import type { UiIconName } from '@/game/assets/spritesheets';
 type RaceUiState =
   | { kind: 'idle' }
   | { kind: 'running'; race: Race; remainingSeconds: number }
-  | { kind: 'result'; position: 1 | 2 | 3; reward: number; points: number };
+  | { kind: 'result'; position: number; reward: number; points: number };
 
 export class RaceScene extends Scene {
   // entities
@@ -166,6 +166,10 @@ export class RaceScene extends Scene {
 
       if (!state.car.hasRequiredRaceParts()) {
         return { label: 'Need core parts', disabled: true, icon: 'needFullCar' satisfies UiIconName };
+      }
+
+      if (race.requiresCompleteCar && !state.car.hasCompleteCar()) {
+        return { label: 'Need full car', disabled: true, icon: 'needFullCar' satisfies UiIconName };
       }
 
       if (!state.car.canRace()) {

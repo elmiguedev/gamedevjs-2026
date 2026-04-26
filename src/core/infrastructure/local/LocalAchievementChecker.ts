@@ -11,15 +11,23 @@ type AchievementRule = {
 
 const RULES: AchievementRule[] = [
   { id: 'cup-rust-sprint', unlocked: (state) => state.raceWins >= 1 },
-  { id: 'cup-street-relay', unlocked: (state) => state.racePoints >= 20 },
-  { id: 'cup-neon-league', unlocked: (state) => state.racePoints >= 45 },
-  { id: 'cup-urban-qualifier', unlocked: (state) => state.racePoints >= 70 },
-  { id: 'cup-neon-crown', unlocked: (state) => state.racePoints >= 100 },
+  { id: 'cup-street-relay', unlocked: (state) => state.racePoints >= 35 },
+  { id: 'cup-neon-league', unlocked: (state) => state.racePoints >= 90 },
+  { id: 'cup-urban-qualifier', unlocked: (state) => state.racePoints >= 160 },
+  { id: 'cup-neon-crown', unlocked: (state) => state.racePoints >= 320 },
+  { id: 'cup-podium-hunter', unlocked: (state) => state.racesCompleted >= 5 },
+  { id: 'cup-street-contender', unlocked: (state) => state.raceWins >= 3 },
+  { id: 'cup-prize-fighter', unlocked: (state) => state.racePoints >= 220 },
+  { id: 'cup-crown-defense', unlocked: (state) => state.raceWins >= 8 },
   { id: 'craft-basic-wheels', unlocked: (state) => state.craftedWheelParts >= 1 },
   { id: 'craft-full-basic-set', unlocked: (state) => state.partsCrafted >= 6 },
+  { id: 'craft-wheel-specialist', unlocked: (state) => state.craftedWheelParts >= 3 },
+  { id: 'craft-premium-builder', unlocked: (state) => state.partsCrafted >= 10 },
   { id: 'collect-scrap', unlocked: (state) => state.scrapCollected >= 100 },
-  { id: 'collection-complete-car', unlocked: (state) => state.partsCrafted >= 9 },
+  { id: 'collection-complete-car', unlocked: (state) => state.car.hasCompleteCar() },
+  { id: 'collection-tuned-car', unlocked: (state) => state.car.attributes.acceleration >= 12 && state.car.attributes.speed >= 8 },
   { id: 'meta-first-race', unlocked: (state) => state.racesCompleted >= 1 },
+  { id: 'meta-race-grinder', unlocked: (state) => state.racesCompleted >= 10 },
 ];
 
 export class LocalAchievementChecker implements AchievementChecker {
